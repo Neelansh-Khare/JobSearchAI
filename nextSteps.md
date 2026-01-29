@@ -324,20 +324,20 @@ backend/
 
 **1. Install Dependencies:**
 ```bash
-cd Resume-Customizer/backend
+cd backend
 pip install -r requirements.txt
 ```
 
 **2. Initialize Database:**
 ```bash
-cd Resume-Customizer/backend
+cd backend
 python init_db.py
 ```
 *(Alternatively, database auto-initializes on server start)*
 
 **3. Start Backend Server:**
 ```bash
-cd Resume-Customizer/backend
+cd backend
 uvicorn main:app --reload --port 8000
 ```
 - API docs: `http://127.0.0.1:8000/docs`
@@ -347,7 +347,7 @@ uvicorn main:app --reload --port 8000
 
 **4. Start Frontend:**
 ```bash
-cd Resume-Customizer/frontend
+cd frontend
 npm install  # if not already done
 npm run dev
 ```
@@ -996,7 +996,7 @@ NEXT_PUBLIC_GA_ID=your_google_analytics_id
 pip install alembic
 
 # Initialize Alembic (one-time)
-cd Resume-Customizer/backend
+cd backend
 alembic init alembic
 
 # Configure alembic.ini to use your DATABASE_URL
@@ -1112,7 +1112,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 2. Import GitHub repository
 3. Configure:
    - **Framework Preset:** Next.js
-   - **Root Directory:** `Resume-Customizer/frontend`
+   - **Root Directory:** `frontend`
    - **Build Command:** `npm run build` (auto-detected)
    - **Output Directory:** `.next`
 4. Add environment variables:
@@ -1238,7 +1238,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
-          working-directory: Resume-Customizer/frontend
+          working-directory: frontend
 ```
 
 ### 11.12 Deployment Steps Summary
@@ -1268,7 +1268,7 @@ jobs:
    ```bash
    # On Vercel:
    # - Import GitHub repo
-   # - Set root to Resume-Customizer/frontend
+   # - Set root to frontend
    # - Add NEXT_PUBLIC_API_BASE_URL
    # - Deploy
    ```

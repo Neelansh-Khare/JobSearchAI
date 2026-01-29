@@ -47,7 +47,8 @@ JobSearchAI/
 │   │   ├── services/       # API client functions
 │   │   └── types/          # TypeScript types
 │   └── package.json        # Node.js dependencies
-├── email-genius/           # Reference implementation for Phase 3 (email generation)
+├── legacy-integration/
+│   └── email-genius/       # Reference implementation for Phase 3 (email generation)
 └── nextSteps.md           # Detailed project roadmap and status
 
 ```
@@ -259,7 +260,7 @@ See `nextSteps.md` Section 11 for detailed deployment instructions.
 - **Project Roadmap**: See `nextSteps.md` for detailed phases and features
 - **Phase 1 Setup**: See `backend/PHASE1_SETUP.md`
 - **S3 Integration**: See `README_S3_INTEGRATION.md`
-- **Email Genius Reference**: See `email-genius/README.md` (reference for Phase 3 integration)
+- **Email Genius Reference**: See `legacy-integration/email-genius/README.md` (reference for Phase 3 integration)
 
 ## 🤝 Contributing
 
