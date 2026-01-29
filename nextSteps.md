@@ -10,42 +10,50 @@
 
 ## Current Implementation Status
 
-### Main Application: JobSearchAI (Resume-Customizer/)
+### Main Application: JobSearchAI
 
 **Backend (FastAPI) - Unified:**
 - **✅ Phase 1 Complete:** **Persistent database** (SQLite/PostgreSQL) with SQLAlchemy.
+- **✅ Phase 2 Complete:** **Job Discovery (Hunter)** - JSearch API integration for job search.
 - **Modular structure:** `app/db/`, `app/models/`, `app/api/endpoints/`, `app/schemas/`, `app/services/`.
 - **Database models:** Users, Jobs, Resumes, Applications (shared across all features).
 - **Job CRUD API:** POST, GET, PATCH, DELETE endpoints for job tracking.
 - **Resume API:** `/resumes/tailor` endpoint saves to database and creates Application records.
+- **Search API:** `/search/jobs` endpoint for job discovery with filters (location, remote, employment type, date posted).
 - **Email/Outreach (from email-genius):** Will be integrated as `/api/endpoints/outreach.py` (Phase 3).
 - **Outputs:** Written to `output/` and/or S3, with database records for tracking.
 - **Status:**  
   - **Phase 1 (Tracker Database) ✅ COMPLETE**
+  - **Phase 2 (Hunter - Job Discovery) ✅ COMPLETE**
   - Resume customization functional and integrated.
-  - Ready for Phase 2 (Job Discovery/Hunter).
+  - Ready for Phase 3 (Automation & Outreach).
 
 **Frontend (Next.js + Tailwind) - Unified:**
 - **✅ Phase 1 Complete:** `/jobs` page for viewing and managing saved jobs.
+- **✅ Phase 2 Complete:** `/hunter` page for job discovery with search and filters.
+- **✅ Kanban Board:** Drag-and-drop job tracking with dnd-kit.
 - **Enhanced form:** Option to save job before customizing resume.
-- **Job status tracking:** Filterable job list.
+- **Job status tracking:** Filterable job list with Kanban board view.
 - **Single-page flow:** Still works (backward compatible).
-- **Future pages:** All features will be routes in the same Next.js app:
-  - `/` - Home/Resume Customization
-  - `/jobs` - Job Tracker (✅ exists)
-  - `/hunter` - Job Discovery (Phase 2)
+- **Pages implemented:**
+  - `/` - Home/Resume Customization ✅
+  - `/jobs` - Job Tracker with Kanban Board ✅
+  - `/hunter` - Job Discovery ✅
   - `/outreach` - Email/Cover Letter Generation (Phase 3, integrates email-genius)
   - `/referrals` - Network Referrals (Phase 4)
   - `/settings` - User Settings
 
-### Legacy/Experimental Code (To Be Integrated):
+### Legacy/Reference Code:
 
-**email-genius/** (Will be merged into main app):
-- **Status:** **Experimental utility** - code will be integrated into `app/api/endpoints/outreach.py` in Phase 3.
-- **Integration Plan:** 
-  - Move email generation logic to `app/services/email_generator.py`
+**email-genius/** (Reference implementation for Phase 3):
+- **Status:** **Reference code** - Separate Flask app with email generation functionality.
+- **Purpose:** Serves as reference implementation for Phase 3 integration.
+- **Integration Plan (Phase 3):** 
+  - Review email generation logic from `email-genius/app.py`
+  - Move email generation logic to `app/services/email_generator.py` (FastAPI)
   - Create `/outreach/email` and `/outreach/cover-letter` endpoints
-  - Add outreach UI to main Next.js app (new page/route)
+  - Add outreach UI to main Next.js app (`/outreach` page)
+  - Integrate Gmail API for sending emails
   - Use same database (no separate DB needed)
 
 ## Overall Project Status
@@ -56,26 +64,32 @@
 
 - **Current State:** 
   - ✅ **Phase 1 COMPLETE**: Full **Tracker Database** foundation with job CRUD, resume tracking, and application management.
+  - ✅ **Phase 2 COMPLETE**: **Hunter (Job Discovery)** - Job search API integration, search UI with filters, save to tracker functionality.
+  - ✅ **Kanban Board COMPLETE**: Drag-and-drop job tracking with status management.
   - ✅ Working **Resume Tailoring engine** integrated with database.
-  - ✅ **Jobs page** for viewing and managing saved jobs.
-  - ⏳ Email generation (email-genius code exists, will be integrated in Phase 3 as part of main app).
+  - ✅ **Jobs page** with Kanban board for viewing and managing saved jobs.
+  - ✅ **Hunter page** for discovering and saving jobs.
+  - ⏳ Email generation (email-genius reference code available, will be integrated in Phase 3 as part of main app).
 - **Completed in Phase 1:**
   - ✅ Persistent storage (SQLite for dev, PostgreSQL ready for production)
   - ✅ Job tracking with status management
   - ✅ Application tracking (links jobs to customized resumes)
   - ✅ Modular backend architecture (ready for all future features)
   - ✅ Frontend job management UI
+- **Completed in Phase 2:**
+  - ✅ Job search API integration (JSearch via RapidAPI)
+  - ✅ Job discovery UI (`/hunter` page) with search and filters
+  - ✅ Save to tracker functionality from search results
+  - ✅ Kanban board UI with drag-and-drop (`/jobs` page)
+  - ✅ Status filtering and job management
 - **Gap to Vision:** 
-  - ⏳ Job discovery/aggregation (Hunter - Phase 2) - **Will be new routes in same app**
   - ⏳ Automation/bots (cover letters, autofill - Phase 3) - **Will integrate email-genius code**
   - ⏳ Network/referral intelligence (Phase 4) - **Will be new routes in same app**
-  - ⏳ Kanban board UI (next enhancement) - **Will be UI update to existing /jobs page**
   - ⏳ Email parsing/Gmail integration - **Will be new service in same backend**
 - **Next Focus:**  
- 1. **Phase 2**: Job Discovery (Hunter) - New `/hunter` page, new endpoints in same backend
- 2. Enhance Tracker UI with Kanban board - Update existing `/jobs` page
- 3. Phase 3: Automation & Outreach - Integrate email-genius, new `/outreach` page
- 4. Phase 4: Referrals & Network Intelligence - New `/referrals` page, new endpoints
+ 1. **Phase 3**: Automation & Outreach - Integrate email-genius, new `/outreach` page
+ 2. **Phase 4**: Referrals & Network Intelligence - New `/referrals` page, new endpoints
+ 3. Authentication & Multi-tenancy - Remove hardcoded user_id, add user accounts
 
 # Next Steps: Evolving "Resume Customizer" into "JobSearchAI"
 
@@ -151,19 +165,29 @@ You need persistence to track applications.
     *   When a user adds a job to the "Tracker", add a button: **"Generate Tailored Resume"**.
     *   This calls your existing `customize-resume` endpoint, but saves the result to the DB/S3 instead of just returning it.
 
-### Phase 2: The "Hunter" (Discovery & Filtering)
+### Phase 2: The "Hunter" (Discovery & Filtering) ✅ COMPLETE
 *Goal: Find jobs without leaving the app.*
 
+**✅ Completed:**
 1.  **Job Aggregation Service:**
-    *   **Option A (APIs):** Integrate RapidAPI (JSearch, LinkedIn Jobs API).
-    *   **Option B (Scraping):** Build Python scripts using `BeautifulSoup` or `Scrapy` to fetch jobs from company career pages or aggregators (use with caution).
-    *   **Deployment Note:** Scraping services may require proxy/VPN services. Consider using Crawl4AI with proper rate limiting and robots.txt compliance. See Section 11.16 for deployment considerations.
+    *   ✅ Integrated JSearch API (RapidAPI) for job search
+    *   ✅ Created `/search/jobs` endpoint with filters (location, remote, employment type, date posted)
+    *   ✅ Created `/search/jobs/save` endpoint to save jobs from search to tracker
 2.  **Job Feed UI:**
-    *   A searchable list of jobs with filters for **Salary**, **Remote**, and **Role**.
-    *   "Save to Tracker" button.
-3.  **Background Workers (Optional for Phase 2):**
-    *   Scheduled job crawls may require Redis + Celery/RQ workers.
-    *   See Section 11.16 for worker deployment options.
+    *   ✅ Created `/hunter` page with searchable job list
+    *   ✅ Filters for Location, Remote Only, Employment Type, Date Posted
+    *   ✅ "Save to Tracker" button on each job card
+    *   ✅ Job details display (title, company, location, salary, description)
+3.  **Kanban Board Enhancement:**
+    *   ✅ Implemented drag-and-drop Kanban board on `/jobs` page using dnd-kit
+    *   ✅ Six columns: New, Saved, Applied, Interview, Offer, Rejected
+    *   ✅ Drag jobs between columns to update status
+    *   ✅ Status filtering still available
+
+**Future Enhancements (Optional):**
+- Background workers for scheduled job crawls (Redis + Celery/RQ)
+- Additional job sources (LinkedIn Jobs API, company career pages)
+- Scraping service using Crawl4AI/Playwright for custom sources
 
 ### Phase 3: The "Bot" (Automation & Outreach)
 *Goal: Reduce manual data entry and increase conversion.*
@@ -273,9 +297,11 @@ backend/
 
 ---
 
-## 6. Phase 1 Implementation Status ✅
+## 6. Phase 1 & Phase 2 Implementation Status ✅
 
-**✅ COMPLETE: Tracker Database Foundation**
+**✅ COMPLETE: Phase 1 - Tracker Database Foundation**
+
+**✅ COMPLETE: Phase 2 - Hunter (Job Discovery) & Kanban Board**
 
 ### What Has Been Implemented:
 
@@ -345,18 +371,43 @@ npm run dev
 - **resumes**: Resume documents with raw text and file paths
 - **applications**: Links jobs to resumes, tracks tailored resume paths and application status
 
+### Phase 2 Implementation Details:
+
+**✅ Backend - Job Search API:**
+- Created `app/api/endpoints/search.py` with JSearch integration
+- `GET /search/jobs` - Search jobs with filters
+- `POST /search/jobs/save` - Save job from search to tracker
+- Integrated with existing job CRUD endpoints
+
+**✅ Frontend - Hunter Page:**
+- Created `/hunter` page (`src/app/hunter/page.tsx`)
+- Search form with query, location, remote, employment type, date posted filters
+- Job cards displaying title, company, location, salary, description
+- "Save to Tracker" button on each job
+- Toast notifications for user feedback
+
+**✅ Frontend - Kanban Board:**
+- Updated `/jobs` page with drag-and-drop Kanban board
+- Installed `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
+- Six columns: New, Saved, Applied, Interview, Offer, Rejected
+- Drag jobs between columns to update status
+- Status filtering still functional
+- Visual feedback during drag operations
+
 ### Next Steps:
 
-**Phase 2 - Job Discovery (Hunter):**
-1. Integrate job aggregation APIs (JSearch, LinkedIn Jobs API)
-2. Build scraping service using Crawl4AI/Playwright
-3. Create Hunter page with search and filters
-4. "Save to Tracker" flow from job discovery
+**Phase 3 - Automation & Outreach:**
+1. Integrate email-genius code into main app
+2. Create cover letter generation endpoints
+3. Build outreach UI (`/outreach` page)
+4. Browser automation for form filling (Playwright)
+5. Gmail integration for status tracking
 
-**Enhancement - Kanban Board:**
-1. Install `dnd-kit` for drag-and-drop
-2. Replace jobs list with Kanban board view
-3. Drag-and-drop triggers `PATCH /jobs/{id}` status updates
+**Phase 4 - Referrals:**
+1. LinkedIn connections CSV upload
+2. Referral matching engine
+3. Network-powered job discovery UI
+4. Personalized outreach generation
 
 
 ## 7. Resources
@@ -553,11 +604,12 @@ Key use cases:
    - ✅ Basic job CRUD (POST, GET, PATCH, DELETE)
    - ✅ Manual job creation via form
    - ⏳ Kanban board UI (enhancement - next step)
-2. **Milestone 2 – Hunter MVP** ⏳ **IN PROGRESS**
-   - ⏳ External job feed integration (JSearch, LinkedIn Jobs API)
-   - ⏳ Scraping service (Crawl4AI/Playwright)
-   - ⏳ Save-to-tracker flow from discovery
-   - ⏳ Hunter page with search and filters
+2. **Milestone 2 – Hunter MVP** ✅ **COMPLETE**
+   - ✅ External job feed integration (JSearch API)
+   - ✅ Save-to-tracker flow from discovery
+   - ✅ Hunter page with search and filters
+   - ✅ Kanban board with drag-and-drop
+   - ⏳ Scraping service (Crawl4AI/Playwright) - Optional enhancement
 3. **Milestone 3 – Bot MVP** ⏳ **PLANNED**
    - ✅ Tailored resume generation (exists, now integrated with DB)
    - ⏳ Cover letter generation wired into jobs

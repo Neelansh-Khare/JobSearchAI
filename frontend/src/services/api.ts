@@ -1,6 +1,15 @@
 import { CustomizeResumeResponse, Job, JobCreate, JobUpdate } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+// Next.js injects NEXT_PUBLIC_* env vars at build time
+// Access via globalThis to avoid TypeScript errors
+const getEnvVar = (key: string): string | undefined => {
+  if (typeof window !== 'undefined') {
+    return (window as any).__NEXT_DATA__?.env?.[key];
+  }
+  return undefined;
+};
+
+const API_BASE_URL = getEnvVar('NEXT_PUBLIC_API_BASE_URL') || 'http://127.0.0.1:8000';
 
 /**
  * Customize resume with job description and resume
@@ -108,6 +117,83 @@ export const deleteJob = async (jobId: number): Promise<void> => {
   }
 };
 
-export const getApiBaseUrl = (): string => {
-  return API_BASE_URL;
+export const getApiBaseUrl = (): string => API_BASE_URL;
+
+/**
+ * Job Search operations (Phase 2: Hunter)
+ */
+export interface JobSearchParams {
+  query: string;
+  location?: string;
+  remote_only?: boolean;
+  employment_types?: string;
+  job_requirements?: string;
+  date_posted?: string;
+  page?: number;
+  num_pages?: number;
+}
+
+export interface SearchJob {
+  job_id?: string;
+  title: string;
+  company: string;
+  description: string;
+  url: string;
+  location?: string;
+  remote?: boolean;
+  employment_type?: string;
+  salary_min?: number;
+  salary_max?: number;
+  salary_currency?: string;
+  posted_at?: string;
+  source?: string;
+  external_id?: string;
+}
+
+export interface JobSearchResponse {
+  success: boolean;
+  jobs: SearchJob[];
+  total: number;
+  page: number;
+  num_pages: number;
+}
+
+export const searchJobs = async (params: JobSearchParams): Promise<JobSearchResponse> => {
+  const queryParams = new URLSearchParams({
+    query: params.query,
+    page: (params.page || 1).toString(),
+    num_pages: (params.num_pages || 1).toString(),
+  });
+  
+  if (params.location) queryParams.append('location', params.location);
+  if (params.remote_only) queryParams.append('remote_only', 'true');
+  if (params.employment_types) queryParams.append('employment_types', params.employment_types);
+  if (params.job_requirements) queryParams.append('job_requirements', params.job_requirements);
+  if (params.date_posted) queryParams.append('date_posted', params.date_posted);
+
+  const response = await fetch(`${API_BASE_URL}/search/jobs?${queryParams.toString()}`);
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to search jobs');
+  }
+
+  return response.json();
+};
+
+export const saveJobFromSearch = async (jobData: SearchJob, userId: number = 1): Promise<{ success: boolean; job: Job; message: string }> => {
+  const response = await fetch(`${API_BASE_URL}/search/jobs/save?user_id=${userId}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(jobData),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Failed to save job');
+  }
+
+  return response.json();
 }; 

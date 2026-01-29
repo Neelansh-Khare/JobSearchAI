@@ -537,7 +537,7 @@ app.add_middleware(
 
 # Initialize database
 from app.db.database import init_db
-from app.api.endpoints import jobs, resumes
+from app.api.endpoints import jobs, resumes, search
 
 # Initialize database tables on startup
 @app.on_event("startup")
@@ -548,6 +548,7 @@ async def startup_event():
 # Include routers
 app.include_router(jobs.router)
 app.include_router(resumes.router)
+app.include_router(search.router)
 
 #------------------------------------------------------------
 # API ENDPOINTS
