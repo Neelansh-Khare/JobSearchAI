@@ -38,3 +38,5 @@ class Job(Base):
     # Relationships
     user = relationship("User", backref="jobs")
     applications = relationship("Application", back_populates="job", cascade="all, delete-orphan")
+    outreach_items = relationship("Outreach", back_populates="job", cascade="all, delete-orphan")
+

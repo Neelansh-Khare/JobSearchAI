@@ -11,7 +11,7 @@ JobSearchAI transforms the job search process from reactive (customizing resumes
 1. **🔍 Hunter (Job Discovery)** - Search and discover jobs from multiple sources
 2. **📋 Tracker (Kanban Board)** - Track applications through stages with drag-and-drop
 3. **🤖 Resume Customization** - AI-powered resume tailoring for specific job descriptions
-4. **📧 Outreach** (Coming in Phase 3) - Automated cover letters and email generation
+4. **📧 Outreach** - Automated email generation and contact finding
 5. **🤝 Referrals** (Coming in Phase 4) - Network-powered job discovery
 
 ## 🏗️ Architecture
@@ -29,11 +29,11 @@ JobSearchAI transforms the job search process from reactive (customizing resumes
 JobSearchAI/
 ├── backend/                 # FastAPI backend
 │   ├── app/
-│   │   ├── api/endpoints/  # API routes (jobs, resumes, search)
+│   │   ├── api/endpoints/  # API routes (jobs, resumes, search, outreach)
 │   │   ├── db/             # Database configuration
 │   │   ├── models/         # SQLAlchemy models
 │   │   ├── schemas/        # Pydantic schemas
-│   │   └── services/       # Business logic
+│   │   └── services/       # Business logic (e.g., email_generator)
 │   ├── pdf_generator/       # LaTeX PDF generation
 │   ├── main.py             # FastAPI app entry point
 │   └── requirements.txt    # Python dependencies
@@ -42,13 +42,14 @@ JobSearchAI/
 │   │   ├── app/            # Next.js app router pages
 │   │   │   ├── page.tsx    # Home (Resume Customization)
 │   │   │   ├── jobs/       # Job Tracker (Kanban)
-│   │   │   └── hunter/     # Job Discovery
+│   │   │   ├── hunter/     # Job Discovery
+│   │   │   └── outreach/   # Email/Outreach
 │   │   ├── components/     # React components
 │   │   ├── services/       # API client functions
 │   │   └── types/          # TypeScript types
-│   └── package.json        # Node.js dependencies
-├── legacy-integration/
-│   └── email-genius/       # Reference implementation for Phase 3 (email generation)
+│   ├── package.json        # Node.js dependencies
+│   ├── tailwind.config.js  # Tailwind CSS configuration
+│   └── ...
 └── nextSteps.md           # Detailed project roadmap and status
 
 ```
@@ -82,6 +83,9 @@ JobSearchAI/
    
    # Optional: JSearch API Key (for job discovery)
    JSEARCH_API_KEY=your_jsearch_api_key_here
+
+   # Optional: Apify API Token (for LinkedIn contact search)
+   APIFY_API_TOKEN=your_apify_api_token_here
    
    # Optional: Database (defaults to SQLite)
    DATABASE_URL=sqlite:///./jobsearchai.db
@@ -158,6 +162,11 @@ JobSearchAI/
 - Save jobs directly to tracker
 - View job details and apply
 
+### 4. Outreach (`/outreach`)
+
+- **Email Generation**: AI-powered generation of cold emails, follow-ups, or referral requests.
+- **Contact Finding**: Discover potential hiring managers or recruiters using AI or LinkedIn (via Apify).
+
 ## 🔧 API Endpoints
 
 ### Jobs
@@ -172,9 +181,13 @@ JobSearchAI/
 - `GET /resumes/` - List resumes
 - `POST /resumes/tailor` - Tailor resume for a job
 
-### Search (Phase 2)
+### Search
 - `GET /search/jobs` - Search for jobs
 - `POST /search/jobs/save` - Save job from search results
+
+### Outreach
+- `POST /outreach/email/generate` - Generate AI-powered email content
+- `POST /outreach/contacts/find` - Find potential contacts
 
 ### Resume Customization
 - `POST /customize-resume/` - Customize resume (legacy endpoint)
@@ -193,9 +206,13 @@ JobSearchAI/
 - Save to tracker functionality
 - Kanban board with drag-and-drop
 
-### ⏳ Phase 3: Bot (PLANNED)
+### ✅ Phase 3: Bot - Email Generation & Contact Finding (COMPLETE)
+- AI-powered email generation integrated
+- AI and LinkedIn (via Apify) contact finding implemented
+- Dedicated frontend `/outreach` page
+
+### ⏳ Phase 3 (Remaining): Bot - Browser Automation & Gmail Integration (PLANNED)
 - Cover letter generation
-- Email/LinkedIn outreach automation
 - Browser automation for form filling
 - Gmail integration for status tracking
 
@@ -210,9 +227,10 @@ JobSearchAI/
 ### Backend
 - **FastAPI** - Modern Python web framework
 - **SQLAlchemy** - ORM for database operations
-- **Google Gemini** - AI for resume customization
+- **Google Gemini** - AI for resume customization, email generation, and contact finding
 - **LaTeX** - PDF generation
 - **JSearch API** - Job search aggregation
+- **Apify Client** - For LinkedIn contact search
 
 ### Frontend
 - **Next.js 15** - React framework with App Router
@@ -258,9 +276,7 @@ See `nextSteps.md` Section 11 for detailed deployment instructions.
 ## 📚 Documentation
 
 - **Project Roadmap**: See `nextSteps.md` for detailed phases and features
-- **Phase 1 Setup**: See `backend/PHASE1_SETUP.md`
 - **S3 Integration**: See `README_S3_INTEGRATION.md`
-- **Email Genius Reference**: See `legacy-integration/email-genius/README.md` (reference for Phase 3 integration)
 
 ## 🤝 Contributing
 

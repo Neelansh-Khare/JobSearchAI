@@ -1,8 +1,8 @@
-# AWS S3 Integration for Resume-Customizer
+# AWS S3 Integration for JobSearchAI
 
 ## Overview
 
-The Resume-Customizer application now stores generated PDFs and JSON files in AWS S3, providing several benefits:
+The JobSearchAI application now stores generated PDFs and JSON files in AWS S3, providing several benefits:
 
 - Scalable storage solution independent of server disk space
 - Better availability and durability for files
@@ -120,3 +120,16 @@ Potential future improvements:
 3. **Server-side encryption**: Implement encryption for sensitive files
 4. **Versioning**: Enable bucket versioning to maintain file history
 5. **ATS history tracking**: Store historical ATS evaluations to track improvement over time
+
+## Deployment Considerations
+
+For full project deployment instructions (including backend, frontend, and database setup), please refer to Section 11: "Deployment & Hosting Guide" in `nextSteps.md`.
+
+When deploying the JobSearchAI application, consider the following S3-specific points:
+
+1.  **Environment Variables**: Ensure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, and `S3_BUCKET_NAME` are correctly configured in your backend's production environment variables (e.g., in your Railway/Render/Fly.io service settings).
+2.  **S3 Bucket CORS**: Configure CORS policies on your S3 bucket to allow requests from your frontend's production domain. This is crucial for viewing and downloading files directly from S3 via presigned URLs.
+3.  **IAM Permissions**: Verify that the IAM user or role associated with your deployed backend has the necessary permissions (S3 `PutObject`, `GetObject`, `ListBucket`) for the designated S3 bucket.
+4.  **Regional Consistency**: Ensure your `AWS_REGION` environment variable matches the region where your S3 bucket is located to avoid latency or connectivity issues.
+5.  **Security**: Consider implementing server-side encryption for your S3 bucket for enhanced data security, especially for sensitive resume data.
+

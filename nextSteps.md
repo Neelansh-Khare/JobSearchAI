@@ -39,22 +39,9 @@
   - `/` - Home/Resume Customization ✅
   - `/jobs` - Job Tracker with Kanban Board ✅
   - `/hunter` - Job Discovery ✅
-  - `/outreach` - Email/Cover Letter Generation (Phase 3, integrates email-genius)
+  - `/outreach` - Email/Cover Letter Generation (Phase 3) ✅
   - `/referrals` - Network Referrals (Phase 4)
   - `/settings` - User Settings
-
-### Legacy/Reference Code:
-
-**email-genius/** (Reference implementation for Phase 3):
-- **Status:** **Reference code** - Separate Flask app with email generation functionality.
-- **Purpose:** Serves as reference implementation for Phase 3 integration.
-- **Integration Plan (Phase 3):** 
-  - Review email generation logic from `email-genius/app.py`
-  - Move email generation logic to `app/services/email_generator.py` (FastAPI)
-  - Create `/outreach/email` and `/outreach/cover-letter` endpoints
-  - Add outreach UI to main Next.js app (`/outreach` page)
-  - Integrate Gmail API for sending emails
-  - Use same database (no separate DB needed)
 
 ## Overall Project Status
 
@@ -69,7 +56,7 @@
   - ✅ Working **Resume Tailoring engine** integrated with database.
   - ✅ **Jobs page** with Kanban board for viewing and managing saved jobs.
   - ✅ **Hunter page** for discovering and saving jobs.
-  - ⏳ Email generation (email-genius reference code available, will be integrated in Phase 3 as part of main app).
+  - ✅ **Email/Outreach (Phase 3 - Content Generation)** - Email generation and contact finding integrated.
 - **Completed in Phase 1:**
   - ✅ Persistent storage (SQLite for dev, PostgreSQL ready for production)
   - ✅ Job tracking with status management
@@ -82,12 +69,13 @@
   - ✅ Save to tracker functionality from search results
   - ✅ Kanban board UI with drag-and-drop (`/jobs` page)
   - ✅ Status filtering and job management
+- **Completed in Phase 3 (Partial):**
+  - ✅ Email/Cover Letter Generation & Contact Finding integrated (core `email-genius` logic moved to `app/services/email_generator.py`, new endpoints in `app/api/endpoints/outreach.py`, and `/outreach` page in Next.js frontend).
 - **Gap to Vision:** 
-  - ⏳ Automation/bots (cover letters, autofill - Phase 3) - **Will integrate email-genius code**
+  - ⏳ Automation/bots (cover letters, autofill - Phase 3) - **Next up: Browser Automation & Gmail Integration**
   - ⏳ Network/referral intelligence (Phase 4) - **Will be new routes in same app**
-  - ⏳ Email parsing/Gmail integration - **Will be new service in same backend**
 - **Next Focus:**  
- 1. **Phase 3**: Automation & Outreach - Integrate email-genius, new `/outreach` page
+ 1. **Phase 3 (Remaining)**: Browser Automation & Gmail Integration
  2. **Phase 4**: Referrals & Network Intelligence - New `/referrals` page, new endpoints
  3. Authentication & Multi-tenancy - Remove hardcoded user_id, add user accounts
 
