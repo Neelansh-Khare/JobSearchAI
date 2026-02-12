@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getJobs, deleteJob, updateJob, Job } from '@/services/api';
+import { useState, useEffect, useCallback } from 'react';
+import { JobSearchAPI } from '@/services/api';
+import { Job } from '@/types';
 import GlassCard from '@/components/GlassCard';
 import GlassButton from '@/components/GlassButton';
 import KanbanBoard from '@/components/Kanban/KanbanBoard';
@@ -16,15 +17,11 @@ export default function JobsPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
-  useEffect(() => {
-    loadJobs();
-  }, [statusFilter]);
-
-  const loadJobs = async () => {
+  const loadJobs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getJobs(1, statusFilter || undefined);
+      const data = await JobSearchAPI.getJobs(1, statusFilter || undefined);
       setJobs(data);
     } catch (err) {
       console.error('Error loading jobs:', err);
@@ -33,11 +30,15 @@ export default function JobsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    loadJobs();
+  }, [loadJobs]);
 
   const handleDelete = async (jobId: number) => {
     try {
-      await deleteJob(jobId);
+      await JobSearchAPI.deleteJob(jobId);
       toast.success('Job deleted');
       loadJobs();
     } catch (err) {
@@ -48,7 +49,7 @@ export default function JobsPage() {
 
   const handleJobMove = async (jobId: number, newStatus: Job['status']) => {
     try {
-      await updateJob(jobId, { status: newStatus });
+      await JobSearchAPI.updateJob(jobId, { status: newStatus });
       const job = jobs.find((j) => j.id === jobId);
       toast.success(`Moved "${job?.title}" to ${newStatus}`);
       loadJobs();

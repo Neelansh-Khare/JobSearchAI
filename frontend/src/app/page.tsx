@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import JobApplicationForm from "@/components/JobApplicationForm";
 import ResultDisplay from "@/components/ResultDisplay";
-import { customizeResume, getApiBaseUrl } from "@/services/api";
+import { JobSearchAPI, getApiBaseUrl } from "@/services/api";
 import GlassCard from '@/components/GlassCard';
 import { CustomizeResumeResponse } from '@/types';
 
@@ -23,7 +23,7 @@ export default function Home() {
     setError(null);
     
     try {
-      const data = await customizeResume(jobDescription, resumeFile);
+      const data = await JobSearchAPI.customizeResume(jobDescription, resumeFile);
       setResult(data);
       
       // If job was saved, you could show a success message or redirect

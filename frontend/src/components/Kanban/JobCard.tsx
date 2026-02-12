@@ -3,7 +3,9 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import GlassCard from '@/components/GlassCard';
-import { Job } from '@/services/api';
+import { JobSearchAPI } from '@/services/api'; // Import API
+import { Job } from '@/types';
+import { useState } from 'react';
 
 interface JobCardProps {
   job: Job;
@@ -11,6 +13,7 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job, onDelete }: JobCardProps) {
+  const [isApplying, setIsApplying] = useState(false);
   const {
     attributes,
     listeners,
@@ -24,6 +27,23 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
+  };
+
+  const handleAutoApply = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!job.url) return;
+    
+    if (!confirm(`Auto-apply to ${job.company}? This will open a browser window.`)) return;
+
+    setIsApplying(true);
+    try {
+      await JobSearchAPI.autoApply(job.url);
+      alert('Automation completed! Check the output folder for a screenshot.');
+    } catch (err) {
+      alert('Failed to apply: ' + (err as Error).message);
+    } finally {
+      setIsApplying(false);
+    }
   };
 
   return (
@@ -48,17 +68,39 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
           </button>
         </div>
         <p className="text-xs opacity-70 line-clamp-2 mb-2">{job.description}</p>
-        {job.url && (
-          <a
-            href={job.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="text-xs text-blue-400 hover:text-blue-300"
-          >
-            View Job →
-          </a>
-        )}
+        
+        <div className="flex items-center justify-between mt-2">
+            {job.url && (
+            <a
+                href={job.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-xs text-blue-400 hover:text-blue-300"
+            >
+                View Job →
+            </a>
+            )}
+            
+            {job.url && (
+            <button
+                onClick={handleAutoApply}
+                disabled={isApplying}
+                className={`text-xs flex items-center gap-1 px-2 py-1 rounded ${
+                    isApplying 
+                    ? 'text-gray-400 cursor-not-allowed' 
+                    : 'text-purple-300 hover:text-purple-200 hover:bg-purple-500/20'
+                }`}
+                title="Use AI to fill the application form"
+            >
+                {isApplying ? (
+                    <span>⏳ Applying...</span>
+                ) : (
+                    <>✨ Auto Apply</>
+                )}
+            </button>
+            )}
+        </div>
       </GlassCard>
     </div>
   );

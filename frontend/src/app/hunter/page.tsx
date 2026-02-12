@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { searchJobs, saveJobFromSearch, JobSearchParams, SearchJob } from '@/services/api';
+import { JobSearchAPI, JobSearchParams, SearchJob } from '@/services/api';
 import GlassCard from '@/components/GlassCard';
 import GlassButton from '@/components/GlassButton';
 import Link from 'next/link';
@@ -32,10 +32,10 @@ export default function HunterPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const results = await searchJobs(searchParams);
+      const results = await JobSearchAPI.searchJobs(searchParams);
       setJobs(results.jobs);
       if (results.jobs.length === 0) {
-        toast.info('No jobs found. Try adjusting your search criteria.');
+        toast('No jobs found. Try adjusting your search criteria.', { icon: 'ℹ️' });
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to search jobs';
@@ -49,7 +49,7 @@ export default function HunterPage() {
   const handleSaveJob = async (job: SearchJob) => {
     setSavingJobId(job.external_id || job.job_id || '');
     try {
-      await saveJobFromSearch(job);
+      await JobSearchAPI.saveJobFromSearch(job);
       toast.success(`Saved "${job.title}" to your tracker!`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save job';

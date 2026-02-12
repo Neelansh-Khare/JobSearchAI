@@ -11,7 +11,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import KanbanColumn from './KanbanColumn';
-import { Job } from '@/services/api';
+import { Job } from '@/types';
 
 const STATUSES: Job['status'][] = ['New', 'Saved', 'Applied', 'Interview', 'Offer', 'Rejected'];
 
@@ -37,14 +37,28 @@ export default function KanbanBoard({ jobs, onJobMove, onJobDelete }: KanbanBoar
     }
 
     const activeJob = jobs.find((j) => j.id === active.id);
-    const overColumn = over.id as string;
-
-    if (!activeJob || !STATUSES.includes(overColumn as Job['status'])) {
+    if (!activeJob) {
       return;
     }
 
-    const newStatus = overColumn as Job['status'];
-    await onJobMove(activeJob.id, newStatus);
+    // Determine the new status based on drop target
+    let newStatus: Job['status'] | undefined;
+
+    // Check if dropped on a column (status string)
+    if (STATUSES.includes(over.id as Job['status'])) {
+      newStatus = over.id as Job['status'];
+    } 
+    // Check if dropped on another job (number ID)
+    else {
+      const overJob = jobs.find((j) => j.id === over.id);
+      if (overJob) {
+        newStatus = overJob.status;
+      }
+    }
+
+    if (newStatus && activeJob.status !== newStatus) {
+      await onJobMove(activeJob.id, newStatus);
+    }
   };
 
   const getJobsByStatus = (status: Job['status']) => {

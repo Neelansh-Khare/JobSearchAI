@@ -1,15 +1,25 @@
 import { CustomizeResumeResponse, Job, JobCreate, JobUpdate } from '@/types';
 
+interface NextWindow {
+  __NEXT_DATA__?: {
+    env?: {
+      [key: string]: string;
+    };
+  };
+}
+
 // Next.js injects NEXT_PUBLIC_* env vars at build time
 // Access via globalThis to avoid TypeScript errors
 const getEnvVar = (key: string): string | undefined => {
   if (typeof window !== 'undefined') {
-    return (window as any).__NEXT_DATA__?.env?.[key];
+    return (window as unknown as NextWindow).__NEXT_DATA__?.env?.[key];
   }
   return undefined;
 };
 
-const API_BASE_URL = getEnvVar('NEXT_PUBLIC_API_BASE_URL') || 'http://127.0.0.1:8000';
+export const getApiBaseUrl = () => getEnvVar('NEXT_PUBLIC_API_BASE_URL') || 'http://127.0.0.1:8000';
+
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Customize resume with job description and resume
@@ -52,7 +62,7 @@ export interface JobSearchResponse {
 }
 
 // Outreach API types
-interface EmailGenerateRequestPayload {
+export interface EmailGenerateRequestPayload {
   purpose: string;
   tone: string;
   recipient_name: string;
@@ -60,11 +70,11 @@ interface EmailGenerateRequestPayload {
   additional_context?: string;
 }
 
-interface EmailGenerateResponse {
+export interface EmailGenerateResponse {
   email_content: string;
 }
 
-interface ContactFindRequestPayload {
+export interface ContactFindRequestPayload {
   company_type: string;
   role_types: string[];
   location: string;
@@ -72,7 +82,7 @@ interface ContactFindRequestPayload {
   max_results?: number;
 }
 
-interface ContactResponsePayload {
+export interface ContactResponsePayload {
   name: string;
   title: string;
   company: string;
@@ -251,6 +261,26 @@ export const JobSearchAPI = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || 'Failed to find contacts');
+    }
+
+    return response.json();
+  },
+
+  autoApply: async (jobUrl: string, userId: number = 1): Promise<unknown> => {
+    const response = await fetch(`${API_BASE_URL}/automation/apply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        job_url: jobUrl,
+        user_id: userId,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to auto-apply');
     }
 
     return response.json();

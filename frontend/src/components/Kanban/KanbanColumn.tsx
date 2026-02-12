@@ -1,9 +1,10 @@
 'use client';
 
+import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import GlassCard from '@/components/GlassCard';
 import JobCard from './JobCard';
-import { Job } from '@/services/api';
+import { Job } from '@/types';
 
 interface KanbanColumnProps {
   status: Job['status'];
@@ -12,8 +13,12 @@ interface KanbanColumnProps {
 }
 
 export default function KanbanColumn({ status, jobs, onDelete }: KanbanColumnProps) {
+  const { setNodeRef } = useDroppable({
+    id: status,
+  });
+
   return (
-    <div className="flex flex-col">
+    <div ref={setNodeRef} className="flex flex-col">
       <GlassCard className="p-4 mb-4">
         <h2 className="text-lg font-bold mb-2">{status}</h2>
         <p className="text-sm opacity-70">{jobs.length} jobs</p>

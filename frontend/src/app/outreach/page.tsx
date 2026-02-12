@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import GlassCard from '@/components/GlassCard';
 import GlassButton from '@/components/GlassButton';
-import { JobSearchAPI } from '@/services/api'; // Assuming JobSearchAPI exists
+import { JobSearchAPI, ContactResponsePayload } from '@/services/api'; // Assuming JobSearchAPI exists
 
 export default function OutreachPage() {
   // State for email generation form
@@ -21,7 +21,7 @@ export default function OutreachPage() {
   const [roleTypes, setRoleTypes] = useState(''); // Comma separated string
   const [location, setLocation] = useState('');
   const [useLinkedin, setUseLinkedin] = useState(false);
-  const [foundContacts, setFoundContacts] = useState([]);
+  const [foundContacts, setFoundContacts] = useState<ContactResponsePayload[]>([]);
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactsError, setContactsError] = useState('');
 
@@ -38,8 +38,8 @@ export default function OutreachPage() {
         additional_context: additionalContext,
       });
       setGeneratedEmail(response.email_content);
-    } catch (err: any) {
-      setEmailError(err.message || 'Failed to generate email.');
+    } catch (err: unknown) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to generate email.');
     } finally {
       setEmailLoading(false);
     }
@@ -59,8 +59,8 @@ export default function OutreachPage() {
         max_results: 5, // Default for now
       });
       setFoundContacts(response);
-    } catch (err: any) {
-      setContactsError(err.message || 'Failed to find contacts.');
+    } catch (err: unknown) {
+      setContactsError(err instanceof Error ? err.message : 'Failed to find contacts.');
     } finally {
       setContactsLoading(false);
     }

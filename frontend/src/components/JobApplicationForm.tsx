@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import GlassCard from './GlassCard';
 import GlassButton from './GlassButton';
-import { createJob, JobCreate } from '@/services/api';
+import { JobSearchAPI } from '@/services/api';
+import { JobCreate } from '@/types';
 
 interface JobApplicationFormProps {
   onSubmit: (jobDescription: string, resumeFile: File, jobId?: number) => Promise<void>;
@@ -62,7 +63,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
           source: 'Manual',
           status: 'New',
         };
-        const savedJob = await createJob(jobData);
+        const savedJob = await JobSearchAPI.createJob(jobData);
         jobId = savedJob.id;
         setSavingJob(false);
       }

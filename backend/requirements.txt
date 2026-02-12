@@ -15,6 +15,10 @@ httpx  # Used by OpenAI client in main.py
 jinja2>=2.11.2  # Template engine for LaTeX templating
 python-dateutil>=2.8.2  # Date parsing and manipulation
 
+# Automation
+playwright>=1.41.0
+beautifulsoup4>=4.12.0
+
 # If you need NLP capabilities later, you can add: spacy>=3.0.0 and use python -m spacy download en_core_web_sm 
 
 boto3==1.34.11
@@ -22,4 +26,4 @@ boto3==1.34.11
 # Database Dependencies
 sqlalchemy>=2.0.0
 alembic>=1.13.0
-apify-client 
+apify-client
