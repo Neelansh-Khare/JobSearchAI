@@ -48,7 +48,7 @@ def init_db():
     This should be called once at application startup.
     """
     # Import all models so they're registered with Base
-    from app.models import user, job, resume, application
+    from app.models import user, job, resume, application, outreach, referral
     
     # Create all tables
     Base.metadata.create_all(bind=engine)

@@ -142,4 +142,39 @@ export interface JobUpdate {
   salary_range?: string;
   remote_policy?: string;
   location?: string;
+}
+
+export interface Referral {
+  id: number;
+  user_id: number;
+  job_id?: number;
+  company: string;
+  contact_name: string;
+  contact_email_or_profile?: string;
+  relationship?: string;
+  status: string;
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface ReferralCreate {
+  user_id: number;
+  job_id?: number;
+  company: string;
+  contact_name: string;
+  contact_email_or_profile?: string;
+  relationship?: string;
+  status?: string;
+  notes?: string;
+}
+
+export interface ReferralUpdate {
+  job_id?: number;
+  company?: string;
+  contact_name?: string;
+  contact_email_or_profile?: string;
+  relationship?: string;
+  status?: string;
+  notes?: string;
 } 

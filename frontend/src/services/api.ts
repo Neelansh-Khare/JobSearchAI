@@ -1,4 +1,4 @@
-import { CustomizeResumeResponse, Job, JobCreate, JobUpdate } from '@/types';
+import { CustomizeResumeResponse, Job, JobCreate, JobUpdate, Referral, ReferralCreate, ReferralUpdate } from '@/types';
 
 interface NextWindow {
   __NEXT_DATA__?: {
@@ -284,5 +284,69 @@ export const JobSearchAPI = {
     }
 
     return response.json();
+  },
+
+  // Referral methods
+  createReferral: async (referral: ReferralCreate): Promise<Referral> => {
+    const response = await fetch(`${API_BASE_URL}/referrals/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(referral),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to create referral');
+    }
+
+    return response.json();
+  },
+
+  getReferrals: async (userId: number = 1, company?: string, status?: string): Promise<Referral[]> => {
+    const params = new URLSearchParams({
+      user_id: userId.toString(),
+    });
+    
+    if (company) params.append('company', company);
+    if (status) params.append('status', status);
+
+    const response = await fetch(`${API_BASE_URL}/referrals/?${params.toString()}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to fetch referrals');
+    }
+
+    return response.json();
+  },
+
+  updateReferral: async (referralId: number, referralUpdate: ReferralUpdate): Promise<Referral> => {
+    const response = await fetch(`${API_BASE_URL}/referrals/${referralId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(referralUpdate),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update referral');
+    }
+
+    return response.json();
+  },
+
+  deleteReferral: async (referralId: number): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/referrals/${referralId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to delete referral');
+    }
   },
 }; 

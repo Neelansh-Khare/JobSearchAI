@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -21,8 +22,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Glassmorphism UI",
-  description: "A beautiful Next.js app with glassmorphism effects",
+  title: "JobSearchAI - Unified Platform",
+  description: "A beautiful Next.js app with glassmorphism effects for job search automation",
 };
 
 export default function RootLayout({
@@ -36,8 +37,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
         suppressHydrationWarning
       >
+        <Navbar />
         <Toaster position="top-center" />
-        {children}
+        <main className="pt-16">
+          {children}
+        </main>
       </body>
     </html>
   );
