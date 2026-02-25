@@ -69,6 +69,14 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
         </div>
         <p className="text-xs opacity-70 line-clamp-2 mb-2">{job.description}</p>
         
+        {job.network_contacts && job.network_contacts.length > 0 && (
+          <div className="mt-1 mb-2">
+            <span className="bg-green-500/20 text-green-300 text-[10px] px-2 py-0.5 rounded-full border border-green-500/30 inline-flex items-center gap-1">
+              🤝 {job.network_contacts.length} {job.network_contacts.length === 1 ? 'Connection' : 'Connections'}
+            </span>
+          </div>
+        )}
+        
         <div className="flex items-center justify-between mt-2">
             {job.url && (
             <a

@@ -6,7 +6,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.database import get_db
 from app.models.job import Job, JobStatus
+from app.models.referral import Referral
 from app.schemas.job import JobCreate, JobUpdate, JobResponse
+from app.schemas.referral import ReferralSchema
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -61,6 +63,23 @@ def list_jobs(
         query = query.filter(Job.company.ilike(f"%{company}%"))
     
     jobs = query.order_by(Job.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Network Intelligence: Match jobs with referral contacts by company name
+    all_referrals = db.query(Referral).filter(Referral.user_id == user_id).all()
+    
+    # Map referrals by company name (case-insensitive)
+    referral_map = {}
+    for ref in all_referrals:
+        company_key = ref.company.lower()
+        if company_key not in referral_map:
+            referral_map[company_key] = []
+        referral_map[company_key].append(ref)
+    
+    # Attach matched referrals to jobs
+    for job in jobs:
+        company_key = job.company.lower()
+        job.network_contacts = referral_map.get(company_key, [])
+        
     return jobs
 
 
@@ -72,6 +91,14 @@ def get_job(job_id: int, db: Session = Depends(get_db)):
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Network Intelligence: Match job with referral contacts by company name
+    referrals = db.query(Referral).filter(
+        Referral.user_id == job.user_id,
+        Referral.company.ilike(job.company)
+    ).all()
+    job.network_contacts = referrals
+    
     return job
 
 

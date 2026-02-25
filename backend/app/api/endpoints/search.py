@@ -9,6 +9,7 @@ import os
 import requests
 from app.db.database import get_db
 from app.models.job import Job, JobStatus
+from app.models.referral import Referral
 from app.schemas.job import JobCreate, JobResponse
 from dotenv import load_dotenv
 
@@ -101,7 +102,9 @@ def search_jobs(
     job_requirements: Optional[str] = Query(None, description="Job requirements filter"),
     date_posted: Optional[str] = Query(None, description="Date posted filter: today, 3days, week, month"),
     page: int = Query(1, ge=1, description="Page number"),
-    num_pages: int = Query(1, ge=1, le=5, description="Number of pages to fetch (max 5)")
+    num_pages: int = Query(1, ge=1, le=5, description="Number of pages to fetch (max 5)"),
+    user_id: int = Query(1, description="User ID (temporary)"),
+    db: Session = Depends(get_db)
 ):
     """
     Search for jobs using external job APIs (JSearch).
@@ -120,14 +123,33 @@ def search_jobs(
             num_pages=num_pages
         )
         
+        # Fetch user's referrals for matching
+        all_referrals = db.query(Referral).filter(Referral.user_id == user_id).all()
+        referral_map = {}
+        for ref in all_referrals:
+            company_key = ref.company.lower()
+            if company_key not in referral_map:
+                referral_map[company_key] = []
+            # Serialize for JSON response since these are dictionaries
+            referral_map[company_key].append({
+                "id": ref.id,
+                "contact_name": ref.contact_name,
+                "company": ref.company,
+                "relationship": ref.relationship,
+                "status": ref.status
+            })
+
         # Transform JSearch results to our format
         jobs = []
         if "data" in results:
             for job_data in results["data"]:
+                company_name = job_data.get("employer_name", "")
+                company_key = company_name.lower()
+                
                 job = {
                     "job_id": job_data.get("job_id"),
                     "title": job_data.get("job_title", ""),
-                    "company": job_data.get("employer_name", ""),
+                    "company": company_name,
                     "description": job_data.get("job_description", ""),
                     "url": job_data.get("job_apply_link", ""),
                     "location": job_data.get("job_city") or job_data.get("job_country", ""),
@@ -138,7 +160,8 @@ def search_jobs(
                     "salary_currency": job_data.get("job_salary_currency"),
                     "posted_at": job_data.get("job_posted_at_datetime_utc"),
                     "source": "jsearch",
-                    "external_id": job_data.get("job_id")
+                    "external_id": job_data.get("job_id"),
+                    "network_contacts": referral_map.get(company_key, [])
                 }
                 jobs.append(job)
         

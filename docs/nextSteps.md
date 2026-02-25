@@ -63,13 +63,12 @@
   - ✅ **Referrals Foundation:** Database and UI for tracking network contacts.
 - **Gap to Vision:** 
   - ⏳ **Gmail Integration** (Final part of Phase 3) - Sync status updates from inbox.
-  - ⏳ **Phase 4 (Advanced):** Network/referral intelligence - Surfacing jobs specifically at companies where you have **first-degree connections**.
+  - ✅ **Phase 4 (Advanced):** Network/referral intelligence - Surfacing jobs specifically at companies where you have **first-degree connections**.
   - ⏳ **Authentication:** Remove hardcoded user_id, add user accounts.
 
 - **Next Focus:**  
- 1. **Phase 4 (Advanced)**: Intelligence to cross-reference saved jobs with your network (LinkedIn first-degree connections).
- 2. **Phase 3 (Remaining)**: Gmail Integration (Read-only status tracking).
- 3. Authentication & Multi-tenancy - Secure user accounts.
+ 1. **Phase 3 (Remaining)**: Gmail Integration (Read-only status tracking).
+ 2. Authentication & Multi-tenancy - Secure user accounts.
 
 # Next Steps: Evolving "Resume Customizer" into "JobSearchAI"
 
@@ -105,13 +104,13 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
     *   **Gmail (Next Step):** Read-only access to scan for status updates.
     *   **LinkedIn:** Browser extension (future) for easy job saving.
 
-### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ⏳ IN PROGRESS
+### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ✅ COMPLETE
 *Goal: Use the candidate’s network to surface jobs where they can get warm referrals.*
 
 1.  **Referral Tracker ✅:** Foundation for saving and managing network contacts.
-2.  **Network Intelligence (Vision) ⏳:** 
-    *   Automatically flag jobs in the "Hunter" or "Tracker" where you have a **first-degree connection** at the company.
-    *   Prioritize outreach to these contacts to secure a warm referral before applying.
+2.  **Network Intelligence ✅:** 
+    *   ✅ Automatically flag jobs in the "Hunter" or "Tracker" where you have a **first-degree connection** at the company.
+    *   ✅ Prioritize outreach to these contacts to secure a warm referral before applying.
 
 ---
 
@@ -123,9 +122,9 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ Tailored resume generation.
    - ✅ Cover letter generation.
    - ✅ **Browser automation for autofill**.
-4. **Milestone 4 – Referrals MVP** ✅ **FOUNDATION COMPLETE**
+4. **Milestone 4 – Referrals MVP** ✅ **COMPLETE**
    - ✅ Networking dashboard.
-   - ⏳ **Network-to-Job matching (Intelligence)**.
+   - ✅ **Network-to-Job matching (Intelligence)**.
 5. **Milestone 5 – Integration & Polish** ⏳ **PLANNED**
    - ⏳ Gmail Integration.
    - ⏳ Authentication & Multi-tenancy.

@@ -177,6 +177,15 @@ export default function HunterPage() {
                     <div className="flex-1 mb-4">
                       <h3 className="text-xl font-bold mb-1">{job.title}</h3>
                       <p className="text-lg opacity-80 mb-2">{job.company}</p>
+                      
+                      {job.network_contacts && job.network_contacts.length > 0 && (
+                        <div className="mb-3">
+                          <span className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full border border-green-500/30 inline-flex items-center gap-1">
+                            🤝 {job.network_contacts.length} Connection{job.network_contacts.length === 1 ? '' : 's'} at this company
+                          </span>
+                        </div>
+                      )}
+
                       {job.location && (
                         <p className="text-sm opacity-70 mb-2">
                           📍 {job.location} {job.remote && '(Remote)'}

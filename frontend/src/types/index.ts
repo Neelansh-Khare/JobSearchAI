@@ -118,6 +118,7 @@ export interface Job {
   location?: string;
   created_at: string;
   updated_at?: string;
+  network_contacts?: Referral[];
 }
 
 export interface JobCreate {

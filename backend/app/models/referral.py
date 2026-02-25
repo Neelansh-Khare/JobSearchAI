@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship as orm_relationship
 from sqlalchemy.sql import func
 from app.db.base import Base
 
@@ -21,5 +21,5 @@ class Referral(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", backref="referrals")
-    job = relationship("Job", backref="referrals")
+    user = orm_relationship("User", backref="referrals")
+    job = orm_relationship("Job", backref="referrals")

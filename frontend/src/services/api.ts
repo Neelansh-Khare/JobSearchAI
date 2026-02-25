@@ -51,6 +51,7 @@ export interface SearchJob {
   posted_at?: string;
   source?: string;
   external_id?: string;
+  network_contacts?: Referral[];
 }
 
 export interface JobSearchResponse {

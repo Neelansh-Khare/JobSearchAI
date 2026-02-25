@@ -2,9 +2,10 @@
 Pydantic schemas for Job model.
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from app.models.job import JobStatus
+from app.schemas.referral import ReferralSchema
 
 
 class JobCreate(BaseModel):
@@ -45,6 +46,7 @@ class JobResponse(BaseModel):
     location: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
+    network_contacts: List[ReferralSchema] = []
 
     class Config:
         from_attributes = True
