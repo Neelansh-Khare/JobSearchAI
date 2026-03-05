@@ -127,4 +127,5 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ **Network-to-Job matching (Intelligence)**.
 5. **Milestone 5 – Integration & Polish** ⏳ **PLANNED**
    - ✅ Gmail Integration.
+   - Also allow gmail integration to send emails?
    - ⏳ Authentication & Multi-tenancy.
