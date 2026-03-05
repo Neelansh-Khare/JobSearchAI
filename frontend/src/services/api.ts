@@ -350,4 +350,18 @@ export const JobSearchAPI = {
       throw new Error(errorData.detail || 'Failed to delete referral');
     }
   },
-}; 
+
+  scanGmail: async (userId: number = 1, daysBack: number = 7): Promise<{ updates_found: number; updates: any[] }> => {
+    const response = await fetch(`${API_BASE_URL}/gmail/scan?user_id=${userId}&days_back=${daysBack}`, {
+      method: 'POST',
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to scan Gmail');
+    }
+
+    return response.json();
+  },
+};
+ 

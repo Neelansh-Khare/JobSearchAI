@@ -230,3 +230,22 @@ Return a JSON response with:
 
 Provide clear, actionable suggestions focused on enhancing the resume's chances for THIS specific job.
 """ 
+
+# Gmail email parsing prompt
+GMAIL_EMAIL_PARSING_PROMPT = """
+Analyze the following email content and determine if it's related to a job application status update.
+If it is, extract the following information in JSON format:
+- is_job_related: Boolean indicating if the email is about a job application.
+- company: The company name.
+- job_title: The job title (if mentioned).
+- status: The new status of the application. Map it to one of these: "Applied", "Interview", "Offer", "Rejected", "Withdrawn", "Other".
+- stage: A more specific stage if available (e.g., "Phone Screen", "Technical Interview", "On-site", "Coding Challenge").
+- action_required: Boolean indicating if the candidate needs to take action (e.g., schedule an interview, provide more info).
+- deadline: Any mentioned deadline for action (ISO format or null).
+- summary: A brief 1-sentence summary of the email.
+
+EMAIL CONTENT:
+{email_content}
+
+Return ONLY the JSON object.
+""" 

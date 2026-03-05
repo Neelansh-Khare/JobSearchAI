@@ -537,7 +537,7 @@ app.add_middleware(
 
 # Initialize database
 from app.db.database import init_db
-from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals
+from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail
 
 # Initialize database tables on startup
 @app.on_event("startup")
@@ -552,6 +552,7 @@ app.include_router(search.router)
 app.include_router(outreach.router, prefix="/outreach", tags=["Outreach"])
 app.include_router(automation.router)
 app.include_router(referrals.router)
+app.include_router(gmail.router)
 
 #------------------------------------------------------------
 # API ENDPOINTS

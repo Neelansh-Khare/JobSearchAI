@@ -15,7 +15,7 @@ class User(Base):
     password_hash = Column(String, nullable=True)  # For future auth
     preferences = Column(JSON, nullable=True)  # e.g., {"remote": True, "salary": 100000, "roles": ["Software Engineer"]}
     linkedin_token = Column(String, nullable=True)
-    gmail_token = Column(String, nullable=True)
+    gmail_token = Column(JSON, nullable=True) # Full credentials object
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

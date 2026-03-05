@@ -61,14 +61,14 @@
   - ✅ **Auto-Apply UI:** Trigger automation directly from the Kanban board.
   - ✅ **Unified Navbar:** Navigation across all app sections.
   - ✅ **Referrals Foundation:** Database and UI for tracking network contacts.
+  - ✅ **Gmail Integration:** Read-only status tracking from inbox.
 - **Gap to Vision:** 
-  - ⏳ **Gmail Integration** (Final part of Phase 3) - Sync status updates from inbox.
-  - ✅ **Phase 4 (Advanced):** Network/referral intelligence - Surfacing jobs specifically at companies where you have **first-degree connections**.
+  - ⏳ **LinkedIn:** Browser extension (future) for easy job saving.
   - ⏳ **Authentication:** Remove hardcoded user_id, add user accounts.
 
 - **Next Focus:**  
- 1. **Phase 3 (Remaining)**: Gmail Integration (Read-only status tracking).
- 2. Authentication & Multi-tenancy - Secure user accounts.
+ 1. Authentication & Multi-tenancy - Secure user accounts.
+ 2. Polish UI/UX and deployment.
 
 # Next Steps: Evolving "Resume Customizer" into "JobSearchAI"
 
@@ -82,7 +82,7 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
     *   AI-driven **Resume Tailoring**.
     *   **Cover Letter/Outreach Generation**.
     *   **Browser-based Auto-apply** ✅.
-4.  **Integrate:** Sync with **LinkedIn** and **Gmail**.
+4.  **Integrate:** Sync with **LinkedIn** and **Gmail** ✅.
 
 ---
 
@@ -92,7 +92,7 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
 
 ### Phase 2: The "Hunter" (Discovery & Filtering) ✅ COMPLETE
 
-### Phase 3: The "Bot" (Automation & Outreach) ✅ CORE COMPLETE
+### Phase 3: The "Bot" (Automation & Outreach) ✅ COMPLETE
 *Goal: Reduce manual data entry and increase conversion.*
 
 1.  **Content Generation ✅:** Cover letters and outreach messages integrated.
@@ -100,8 +100,8 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
     *   ✅ Implemented `app/services/browser_automation.py` using **Playwright**.
     *   ✅ Automated filling for Greenhouse and Lever forms.
     *   ✅ Integrated into UI with "Auto Apply" button.
-3.  **Integration ⏳:**
-    *   **Gmail (Next Step):** Read-only access to scan for status updates.
+3.  **Integration ✅:**
+    *   **Gmail ✅:** Read-only access to scan for status updates.
     *   **LinkedIn:** Browser extension (future) for easy job saving.
 
 ### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ✅ COMPLETE
@@ -126,5 +126,5 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ Networking dashboard.
    - ✅ **Network-to-Job matching (Intelligence)**.
 5. **Milestone 5 – Integration & Polish** ⏳ **PLANNED**
-   - ⏳ Gmail Integration.
+   - ✅ Gmail Integration.
    - ⏳ Authentication & Multi-tenancy.

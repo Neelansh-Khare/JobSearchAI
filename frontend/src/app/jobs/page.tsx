@@ -14,6 +14,7 @@ const STATUSES: Job['status'][] = ['New', 'Saved', 'Applied', 'Interview', 'Offe
 export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('');
 
@@ -59,6 +60,24 @@ export default function JobsPage() {
     }
   };
 
+  const handleSyncGmail = async () => {
+    setIsSyncing(true);
+    try {
+      const result = await JobSearchAPI.scanGmail(1, 7);
+      if (result.updates_found > 0) {
+        toast.success(`Found ${result.updates_found} updates from Gmail!`);
+        loadJobs();
+      } else {
+        toast.info('No new job updates found in Gmail.');
+      }
+    } catch (err) {
+      console.error('Error syncing Gmail:', err);
+      toast.error('Failed to sync Gmail. Ensure your Gmail token is configured.');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
@@ -74,6 +93,13 @@ export default function JobsPage() {
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold">My Jobs</h1>
             <div className="flex gap-4">
+              <GlassButton 
+                onClick={handleSyncGmail} 
+                disabled={isSyncing}
+                className={isSyncing ? 'opacity-50 cursor-not-allowed' : ''}
+              >
+                {isSyncing ? 'Syncing...' : '📧 Sync Gmail'}
+              </GlassButton>
               <Link href="/hunter">
                 <GlassButton>Find Jobs</GlassButton>
               </Link>
