@@ -12,6 +12,8 @@ from app.models.job import Job, JobStatus
 from app.models.referral import Referral
 from app.schemas.job import JobCreate, JobResponse
 from dotenv import load_dotenv
+from app.api import deps
+from app.models.user import User
 
 load_dotenv()
 
@@ -103,7 +105,7 @@ def search_jobs(
     date_posted: Optional[str] = Query(None, description="Date posted filter: today, 3days, week, month"),
     page: int = Query(1, ge=1, description="Page number"),
     num_pages: int = Query(1, ge=1, le=5, description="Number of pages to fetch (max 5)"),
-    user_id: int = Query(1, description="User ID (temporary)"),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -124,7 +126,7 @@ def search_jobs(
         )
         
         # Fetch user's referrals for matching
-        all_referrals = db.query(Referral).filter(Referral.user_id == user_id).all()
+        all_referrals = db.query(Referral).filter(Referral.user_id == current_user.id).all()
         referral_map = {}
         for ref in all_referrals:
             company_key = ref.company.lower()
@@ -184,7 +186,7 @@ def search_jobs(
 @router.post("/jobs/save")
 def save_job_from_search(
     job_data: dict,
-    user_id: int = Query(1, description="User ID (temporary - will be from auth in future)"),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -216,7 +218,7 @@ def save_job_from_search(
         
         # Create job in database
         db_job = Job(
-            user_id=user_id,
+            user_id=current_user.id,
             title=title,
             company=company,
             description=description,

@@ -22,6 +22,8 @@ from app.services.resume_processor import (
     generate_resume_pdf,
     save_resume_json
 )
+from app.api import deps
+from app.models.user import User
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
 
@@ -29,22 +31,19 @@ router = APIRouter(prefix="/resumes", tags=["resumes"])
 @router.post("/upload", response_model=ResumeResponse, status_code=201)
 async def upload_resume(
     resume: UploadFile = File(...),
-    user_id: int = Query(1, description="User ID (temporary - will be from auth in future)"),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Upload and store a resume.
+    Upload and store a resume for the current user.
     """
     # Read and extract text from PDF
     resume_content = await resume.read()
     resume_text = extract_text_from_pdf(resume_content)
     
-    # Parse resume data
-    resume_data = extract_resume_data(resume_text)
-    
     # Store resume in database
     db_resume = Resume(
-        user_id=user_id,
+        user_id=current_user.id,
         raw_text=resume_text,
         file_path=resume.filename,
         tags=None  # Can be extracted from resume_data later
@@ -58,22 +57,29 @@ async def upload_resume(
 
 @router.get("/", response_model=list[ResumeResponse])
 def list_resumes(
-    user_id: int = Query(1, description="User ID"),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    List all resumes for a user.
+    List all resumes for the current user.
     """
-    resumes = db.query(Resume).filter(Resume.user_id == user_id).order_by(Resume.created_at.desc()).all()
+    resumes = db.query(Resume).filter(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()).all()
     return resumes
 
 
 @router.get("/{resume_id}", response_model=ResumeResponse)
-def get_resume(resume_id: int, db: Session = Depends(get_db)):
+def get_resume(
+    resume_id: int, 
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
     """
-    Get a specific resume by ID.
+    Get a specific resume by ID for the current user.
     """
-    resume = db.query(Resume).filter(Resume.id == resume_id).first()
+    resume = db.query(Resume).filter(
+        Resume.id == resume_id,
+        Resume.user_id == current_user.id
+    ).first()
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
     return resume
@@ -84,22 +90,20 @@ async def tailor_resume_for_job_endpoint(
     job_id: int = Form(..., description="Job ID to tailor resume for"),
     resume_id: Optional[int] = Form(None, description="Resume ID (if not provided, uses most recent)"),
     resume_file: Optional[UploadFile] = File(None, description="New resume file (if not using resume_id)"),
-    user_id: int = Query(1, description="User ID"),
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Tailor a resume for a specific job and create an application record.
-    
-    This integrates the existing resume customization logic with the database.
     """
     # Get job
-    job = db.query(Job).filter(Job.id == job_id, Job.user_id == user_id).first()
+    job = db.query(Job).filter(Job.id == job_id, Job.user_id == current_user.id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     
     # Get or create resume
     if resume_id:
-        db_resume = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == user_id).first()
+        db_resume = db.query(Resume).filter(Resume.id == resume_id, Resume.user_id == current_user.id).first()
         if not db_resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         resume_text = db_resume.raw_text
@@ -112,7 +116,7 @@ async def tailor_resume_for_job_endpoint(
         
         # Create resume record
         db_resume = Resume(
-            user_id=user_id,
+            user_id=current_user.id,
             raw_text=resume_text,
             file_path=resume_file.filename
         )
@@ -121,7 +125,7 @@ async def tailor_resume_for_job_endpoint(
         db.refresh(db_resume)
     else:
         # Use most recent resume
-        db_resume = db.query(Resume).filter(Resume.user_id == user_id).order_by(Resume.created_at.desc()).first()
+        db_resume = db.query(Resume).filter(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()).first()
         if not db_resume:
             raise HTTPException(status_code=404, detail="No resume found. Please upload a resume first.")
         resume_text = db_resume.raw_text

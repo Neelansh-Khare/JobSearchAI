@@ -90,6 +90,34 @@ class GmailService:
             logger.error(f"Unexpected error in scan_for_updates: {str(e)}")
             return []
 
+    def send_email(self, user_id: int, recipient_email: str, subject: str, body: str) -> bool:
+        """
+        Sends an email using the user's Gmail account.
+        """
+        service = self._get_gmail_client(user_id)
+        if not service:
+            logger.error(f"Could not get Gmail client for user {user_id}")
+            return False
+
+        try:
+            from email.mime.text import MIMEText
+            import base64
+
+            message = MIMEText(body)
+            message['to'] = recipient_email
+            message['subject'] = subject
+            
+            # Encode the message
+            raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
+            
+            # Send the message
+            sent_message = service.users().messages().send(userId='me', body={'raw': raw}).execute()
+            logger.info(f"Email sent successfully. Message ID: {sent_message['id']}")
+            return True
+        except Exception as e:
+            logger.error(f"Error sending email via Gmail: {str(e)}")
+            return False
+
     def _extract_email_body(self, payload: Dict[str, Any]) -> str:
         """Helper to extract text/plain body from Gmail payload."""
         if 'parts' in payload:

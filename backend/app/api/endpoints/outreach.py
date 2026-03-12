@@ -5,26 +5,24 @@ from typing import List, Optional, Dict, Any
 from app.db.database import get_db
 from app.schemas.outreach import EmailGenerateRequest, ContactFindRequest, ContactResponse # Assuming these schemas will be created
 from app.services.email_generator import EmailGeneratorService
-# from app.models.outreach import Outreach as OutreachModel # Assuming this is needed for saving later
+from app.api import deps
+from app.models.user import User
 
 router = APIRouter()
 
 @router.post("/email/generate", response_model=Dict[str, str], status_code=status.HTTP_200_OK)
 def generate_outreach_email(
     request: EmailGenerateRequest,
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db),
-    # Current user dependency will be added here once authentication is implemented
 ):
     """
     Generates an outreach email using AI.
     """
-    # For now, hardcode user_id until authentication is implemented
-    user_id = 1 
-
     email_generator = EmailGeneratorService(db)
     try:
         generated_email_content = email_generator.generate_email(
-            user_id=user_id,
+            user_id=current_user.id,
             purpose=request.purpose,
             tone=request.tone,
             recipient_name=request.recipient_name,
@@ -41,19 +39,16 @@ def generate_outreach_email(
 @router.post("/contacts/find", response_model=List[ContactResponse], status_code=status.HTTP_200_OK)
 def find_outreach_contacts(
     request: ContactFindRequest,
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db),
-    # Current user dependency will be added here once authentication is implemented
 ):
     """
     Finds potential outreach contacts using LinkedIn (Apify) or AI.
     """
-    # For now, hardcode user_id until authentication is implemented
-    user_id = 1
-
     email_generator = EmailGeneratorService(db)
     try:
         contacts = email_generator.find_contacts(
-            user_id=user_id,
+            user_id=current_user.id,
             company_type=request.company_type,
             role_types=request.role_types,
             location=request.location,

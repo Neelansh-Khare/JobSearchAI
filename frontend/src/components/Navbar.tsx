@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { JobSearchAPI, getToken } from '@/services/api';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
   { name: 'Home', href: '/', icon: '🏠' },
@@ -15,14 +17,24 @@ const navItems = [
 export default function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
+    setIsLoggedIn(!!getToken());
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
+
+  const handleLogout = () => {
+    JobSearchAPI.logout();
+    setIsLoggedIn(false);
+    router.push('/login');
+    router.refresh();
+  };
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 px-4 py-3 ${
@@ -53,6 +65,22 @@ export default function Navbar() {
               </Link>
             );
           })}
+          
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5"
+            >
+              Login
+            </Link>
+          )}
         </div>
         
         <div className="flex md:hidden items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">

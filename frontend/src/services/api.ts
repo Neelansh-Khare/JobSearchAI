@@ -92,7 +92,97 @@ export interface ContactResponsePayload {
   source: string;
 }
 
+// Token management
+const TOKEN_KEY = 'jobsearchai_token';
+
+export const getToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(TOKEN_KEY);
+  }
+  return null;
+};
+
+export const setToken = (token: string | null) => {
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  }
+};
+
+const getHeaders = (contentType: string = 'application/json') => {
+  const headers: Record<string, string> = {};
+  if (contentType !== 'multipart/form-data') {
+    headers['Content-Type'] = contentType;
+  }
+  
+  const token = getToken();
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+};
+
 export const JobSearchAPI = {
+  // Auth methods
+  login: async (email: string, password: string): Promise<{ access_token: string; token_type: string }> => {
+    const formData = new URLSearchParams();
+    formData.append('username', email);
+    formData.append('password', password);
+
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Login failed');
+    }
+
+    const data = await response.json();
+    setToken(data.access_token);
+    return data;
+  },
+
+  register: async (userData: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Registration failed');
+    }
+
+    return response.json();
+  },
+
+  getCurrentUser: async (): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user profile');
+    }
+
+    return response.json();
+  },
+
+  logout: () => {
+    setToken(null);
+  },
+
   customizeResume: async (jobDescription: string, resumeFile: File): Promise<CustomizeResumeResponse> => {
     const formData = new FormData();
     formData.append('job_description_text', jobDescription);
@@ -100,6 +190,7 @@ export const JobSearchAPI = {
 
     const response = await fetch(`${API_BASE_URL}/customize-resume/`, {
       method: 'POST',
+      headers: getHeaders('multipart/form-data'),
       body: formData,
     });
 
@@ -111,12 +202,10 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  createJob: async (job: JobCreate, userId: number = 1): Promise<Job> => {
-    const response = await fetch(`${API_BASE_URL}/jobs/?user_id=${userId}`, {
+  createJob: async (job: JobCreate): Promise<Job> => {
+    const response = await fetch(`${API_BASE_URL}/jobs/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(job),
     });
 
@@ -129,14 +218,12 @@ export const JobSearchAPI = {
   },
 
   getJobs: async (
-    userId: number = 1,
     status?: string,
     company?: string,
     skip: number = 0,
     limit: number = 100
   ): Promise<Job[]> => {
     const params = new URLSearchParams({
-      user_id: userId.toString(),
       skip: skip.toString(),
       limit: limit.toString(),
     });
@@ -144,7 +231,9 @@ export const JobSearchAPI = {
     if (status) params.append('status', status);
     if (company) params.append('company', company);
 
-    const response = await fetch(`${API_BASE_URL}/jobs/?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/jobs/?${params.toString()}`, {
+      headers: getHeaders(),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -155,7 +244,9 @@ export const JobSearchAPI = {
   },
 
   getJob: async (jobId: number): Promise<Job> => {
-    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`);
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
+      headers: getHeaders(),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -168,9 +259,7 @@ export const JobSearchAPI = {
   updateJob: async (jobId: number, jobUpdate: JobUpdate): Promise<Job> => {
     const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(jobUpdate),
     });
 
@@ -185,6 +274,7 @@ export const JobSearchAPI = {
   deleteJob: async (jobId: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
       method: 'DELETE',
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -206,7 +296,9 @@ export const JobSearchAPI = {
     if (params.job_requirements) queryParams.append('job_requirements', params.job_requirements);
     if (params.date_posted) queryParams.append('date_posted', params.date_posted);
 
-    const response = await fetch(`${API_BASE_URL}/search/jobs?${queryParams.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/search/jobs?${queryParams.toString()}`, {
+      headers: getHeaders(),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -216,12 +308,10 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  saveJobFromSearch: async (jobData: SearchJob, userId: number = 1): Promise<{ success: boolean; job: Job; message: string }> => {
-    const response = await fetch(`${API_BASE_URL}/search/jobs/save?user_id=${userId}`, {
+  saveJobFromSearch: async (jobData: SearchJob): Promise<{ success: boolean; job: Job; message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/search/jobs/save`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(jobData),
     });
 
@@ -236,9 +326,7 @@ export const JobSearchAPI = {
   generateEmail: async (payload: EmailGenerateRequestPayload): Promise<EmailGenerateResponse> => {
     const response = await fetch(`${API_BASE_URL}/outreach/email/generate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -253,9 +341,7 @@ export const JobSearchAPI = {
   findContacts: async (payload: ContactFindRequestPayload): Promise<ContactResponsePayload[]> => {
     const response = await fetch(`${API_BASE_URL}/outreach/contacts/find`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -267,15 +353,12 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  autoApply: async (jobUrl: string, userId: number = 1): Promise<unknown> => {
+  autoApply: async (jobUrl: string): Promise<unknown> => {
     const response = await fetch(`${API_BASE_URL}/automation/apply`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify({
         job_url: jobUrl,
-        user_id: userId,
       }),
     });
 
@@ -291,9 +374,7 @@ export const JobSearchAPI = {
   createReferral: async (referral: ReferralCreate): Promise<Referral> => {
     const response = await fetch(`${API_BASE_URL}/referrals/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(referral),
     });
 
@@ -305,15 +386,14 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  getReferrals: async (userId: number = 1, company?: string, status?: string): Promise<Referral[]> => {
-    const params = new URLSearchParams({
-      user_id: userId.toString(),
-    });
-    
+  getReferrals: async (company?: string, status?: string): Promise<Referral[]> => {
+    const params = new URLSearchParams();
     if (company) params.append('company', company);
     if (status) params.append('status', status);
 
-    const response = await fetch(`${API_BASE_URL}/referrals/?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/referrals/?${params.toString()}`, {
+      headers: getHeaders(),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -326,9 +406,7 @@ export const JobSearchAPI = {
   updateReferral: async (referralId: number, referralUpdate: ReferralUpdate): Promise<Referral> => {
     const response = await fetch(`${API_BASE_URL}/referrals/${referralId}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: JSON.stringify(referralUpdate),
     });
 
@@ -343,6 +421,7 @@ export const JobSearchAPI = {
   deleteReferral: async (referralId: number): Promise<void> => {
     const response = await fetch(`${API_BASE_URL}/referrals/${referralId}`, {
       method: 'DELETE',
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -351,9 +430,10 @@ export const JobSearchAPI = {
     }
   },
 
-  scanGmail: async (userId: number = 1, daysBack: number = 7): Promise<{ updates_found: number; updates: any[] }> => {
-    const response = await fetch(`${API_BASE_URL}/gmail/scan?user_id=${userId}&days_back=${daysBack}`, {
+  scanGmail: async (daysBack: number = 7): Promise<{ updates_found: number; updates: any[] }> => {
+    const response = await fetch(`${API_BASE_URL}/gmail/scan?days_back=${daysBack}`, {
       method: 'POST',
+      headers: getHeaders(),
     });
 
     if (!response.ok) {
@@ -363,5 +443,22 @@ export const JobSearchAPI = {
 
     return response.json();
   },
+
+  sendEmail: async (payload: GmailSendRequestPayload): Promise<{ status: string; message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/gmail/send`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to send email');
+    }
+
+    return response.json();
+  },
 };
+
+
  

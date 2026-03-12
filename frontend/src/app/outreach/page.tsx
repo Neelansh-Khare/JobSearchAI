@@ -12,9 +12,6 @@ export default function OutreachPage() {
   const [recipientName, setRecipientName] = useState('');
   const [recipientCompany, setRecipientCompany] = useState('');
   const [additionalContext, setAdditionalContext] = useState('');
-  const [generatedEmail, setGeneratedEmail] = useState('');
-  const [emailLoading, setEmailLoading] = useState(false);
-  const [emailError, setEmailError] = useState('');
 
   // State for contact finding form
   const [companyType, setCompanyType] = useState('');
@@ -25,10 +22,20 @@ export default function OutreachPage() {
   const [contactsLoading, setContactsLoading] = useState(false);
   const [contactsError, setContactsError] = useState('');
 
+  // Shared outreach states
+  const [generatedEmail, setGeneratedEmail] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [sendLoading, setSendLoading] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState('');
+
   const handleGenerateEmail = async () => {
     setEmailLoading(true);
     setEmailError('');
     setGeneratedEmail('');
+    setSendSuccess('');
     try {
       const response = await JobSearchAPI.generateEmail({
         purpose: emailPurpose,
@@ -37,11 +44,47 @@ export default function OutreachPage() {
         recipient_company: recipientCompany,
         additional_context: additionalContext,
       });
-      setGeneratedEmail(response.email_content);
+
+      let content = response.email_content;
+
+      // Try to extract subject
+      if (content.startsWith('Subject:')) {
+        const lines = content.split('\n');
+        const subjectLine = lines[0].replace('Subject:', '').trim();
+        setEmailSubject(subjectLine);
+        // The rest is the body
+        setGeneratedEmail(lines.slice(1).join('\n').trim());
+      } else {
+        setEmailSubject(`Outreach to ${recipientCompany}`);
+        setGeneratedEmail(content);
+      }
     } catch (err: unknown) {
       setEmailError(err instanceof Error ? err.message : 'Failed to generate email.');
     } finally {
       setEmailLoading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!recipientEmail) {
+      setEmailError('Recipient email is required to send.');
+      return;
+    }
+    setSendLoading(true);
+    setEmailError('');
+    setSendSuccess('');
+    try {
+      await JobSearchAPI.sendEmail({
+        recipient_email: recipientEmail,
+        subject: emailSubject,
+        body: generatedEmail,
+        user_id: 1, // Hardcoded for now
+      });
+      setSendSuccess('Email sent successfully via Gmail!');
+    } catch (err: unknown) {
+      setEmailError(err instanceof Error ? err.message : 'Failed to send email.');
+    } finally {
+      setSendLoading(false);
     }
   };
 
@@ -141,15 +184,59 @@ export default function OutreachPage() {
             </GlassButton>
             {emailError && <p className="text-red-400 text-sm mt-2">{emailError}</p>}
             {generatedEmail && (
-              <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700">
+              <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700 space-y-4">
                 <h3 className="text-xl font-medium mb-2 text-indigo-200">Generated Email:</h3>
-                <pre className="whitespace-pre-wrap text-gray-100 text-sm">{generatedEmail}</pre>
-                <GlassButton
-                  onClick={() => navigator.clipboard.writeText(generatedEmail)}
-                  className="mt-4 px-4 py-2 text-sm"
-                >
-                  Copy to Clipboard
-                </GlassButton>
+                
+                <div>
+                  <label htmlFor="emailSubject" className="block text-xs font-medium text-gray-400">Subject</label>
+                  <input
+                    type="text"
+                    id="emailSubject"
+                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="recipientEmail" className="block text-xs font-medium text-gray-400">Recipient Email</label>
+                  <input
+                    type="email"
+                    id="recipientEmail"
+                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm"
+                    value={recipientEmail}
+                    onChange={(e) => setRecipientEmail(e.target.value)}
+                    placeholder="e.g., jane@company.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="emailBody" className="block text-xs font-medium text-gray-400">Body</label>
+                  <textarea
+                    id="emailBody"
+                    rows={10}
+                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm font-mono"
+                    value={generatedEmail}
+                    onChange={(e) => setGeneratedEmail(e.target.value)}
+                  ></textarea>
+                </div>
+
+                <div className="flex space-x-2">
+                  <GlassButton
+                    onClick={() => navigator.clipboard.writeText(`Subject: ${emailSubject}\n\n${generatedEmail}`)}
+                    className="flex-1 px-4 py-2 text-sm"
+                  >
+                    Copy to Clipboard
+                  </GlassButton>
+                  <GlassButton
+                    onClick={handleSendEmail}
+                    disabled={sendLoading}
+                    className="flex-1 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700"
+                  >
+                    {sendLoading ? 'Sending...' : 'Send via Gmail'}
+                  </GlassButton>
+                </div>
+                {sendSuccess && <p className="text-green-400 text-sm mt-2">{sendSuccess}</p>}
               </div>
             )}
           </div>

@@ -12,7 +12,7 @@ class ReferralBase(BaseModel):
     job_id: Optional[int] = None
 
 class ReferralCreate(ReferralBase):
-    user_id: int
+    user_id: Optional[int] = None
 
 class ReferralUpdate(BaseModel):
     company: Optional[str] = None

@@ -537,7 +537,7 @@ app.add_middleware(
 
 # Initialize database
 from app.db.database import init_db
-from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail
+from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail, auth
 
 # Initialize database tables on startup
 @app.on_event("startup")
@@ -546,6 +546,7 @@ async def startup_event():
     logger.info("Database initialized")
 
 # Include routers
+app.include_router(auth.router, prefix="/auth", tags=["Auth"])
 app.include_router(jobs.router)
 app.include_router(resumes.router)
 app.include_router(search.router)

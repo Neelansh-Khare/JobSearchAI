@@ -4,15 +4,22 @@ from typing import List, Optional
 from app.db.database import get_db
 from app.models.referral import Referral
 from app.schemas.referral import ReferralSchema, ReferralCreate, ReferralUpdate
+from app.api import deps
+from app.models.user import User
 import logging
 
 router = APIRouter(prefix="/referrals", tags=["referrals"])
 logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=ReferralSchema)
-async def create_referral(referral: ReferralCreate, db: Session = Depends(get_db)):
-    """Create a new referral contact."""
+async def create_referral(
+    referral: ReferralCreate, 
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create a new referral contact for current user."""
     db_referral = Referral(**referral.dict())
+    db_referral.user_id = current_user.id
     db.add(db_referral)
     db.commit()
     db.refresh(db_referral)
@@ -20,13 +27,13 @@ async def create_referral(referral: ReferralCreate, db: Session = Depends(get_db
 
 @router.get("/", response_model=List[ReferralSchema])
 async def get_referrals(
-    user_id: int = Query(..., description="The ID of the user"),
+    current_user: User = Depends(deps.get_current_user),
     company: Optional[str] = None,
     status: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """Retrieve all referral contacts for a user."""
-    query = db.query(Referral).filter(Referral.user_id == user_id)
+    """Retrieve all referral contacts for current user."""
+    query = db.query(Referral).filter(Referral.user_id == current_user.id)
     if company:
         query = query.filter(Referral.company.ilike(f"%{company}%"))
     if status:
@@ -35,17 +42,32 @@ async def get_referrals(
     return query.all()
 
 @router.get("/{referral_id}", response_model=ReferralSchema)
-async def get_referral(referral_id: int, db: Session = Depends(get_db)):
-    """Retrieve a specific referral contact."""
-    referral = db.query(Referral).filter(Referral.id == referral_id).first()
+async def get_referral(
+    referral_id: int, 
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Retrieve a specific referral contact for current user."""
+    referral = db.query(Referral).filter(
+        Referral.id == referral_id,
+        Referral.user_id == current_user.id
+    ).first()
     if not referral:
         raise HTTPException(status_code=404, detail="Referral not found")
     return referral
 
 @router.patch("/{referral_id}", response_model=ReferralSchema)
-async def update_referral(referral_id: int, referral_update: ReferralUpdate, db: Session = Depends(get_db)):
-    """Update a referral contact."""
-    db_referral = db.query(Referral).filter(Referral.id == referral_id).first()
+async def update_referral(
+    referral_id: int, 
+    referral_update: ReferralUpdate, 
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Update a referral contact for current user."""
+    db_referral = db.query(Referral).filter(
+        Referral.id == referral_id,
+        Referral.user_id == current_user.id
+    ).first()
     if not db_referral:
         raise HTTPException(status_code=404, detail="Referral not found")
     
@@ -58,9 +80,16 @@ async def update_referral(referral_id: int, referral_update: ReferralUpdate, db:
     return db_referral
 
 @router.delete("/{referral_id}")
-async def delete_referral(referral_id: int, db: Session = Depends(get_db)):
-    """Delete a referral contact."""
-    db_referral = db.query(Referral).filter(Referral.id == referral_id).first()
+async def delete_referral(
+    referral_id: int, 
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a referral contact for current user."""
+    db_referral = db.query(Referral).filter(
+        Referral.id == referral_id,
+        Referral.user_id == current_user.id
+    ).first()
     if not db_referral:
         raise HTTPException(status_code=404, detail="Referral not found")
     

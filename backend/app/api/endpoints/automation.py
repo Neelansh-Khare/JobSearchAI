@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.automation import AutoApplyRequest
 from app.services.browser_automation import BrowserAutomationService
+from app.api import deps
 from app.models.user import User
 
 router = APIRouter(prefix="/automation", tags=["automation"])
@@ -12,31 +13,22 @@ logger = logging.getLogger(__name__)
 @router.post("/apply")
 async def auto_apply(
     request: AutoApplyRequest,
-    background_tasks: BackgroundTasks,
+    current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Trigger the browser automation to apply for a job.
-    This is a long-running task, so for V1 we might run it in background 
-    or await it (blocking). 
-    Since Playwright is async, awaiting it is okay for a demo, but 
-    for production it should be a background task.
     """
-    
-    # 1. Fetch User
-    user = db.query(User).filter(User.id == request.user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
     
     # 2. Prepare User Data
     # Merge explicit request data with user preferences/profile
-    user_prefs = user.preferences if user.preferences else {}
+    user_prefs = current_user.preferences if current_user.preferences else {}
     profile = user_prefs.get("profile", {})
     
     user_data = {
         "first_name": request.first_name or profile.get("first_name", ""),
         "last_name": request.last_name or profile.get("last_name", ""),
-        "email": request.email or user.email,
+        "email": request.email or current_user.email,
         "phone": request.phone or profile.get("phone", ""),
         "linkedin": request.linkedin or profile.get("linkedin", "")
     }
