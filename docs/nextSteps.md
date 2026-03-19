@@ -17,32 +17,37 @@
 - **✅ Phase 2 Complete:** **Job Discovery (Hunter)** - JSearch API integration for job search.
 - **✅ Phase 3 Complete (Core):** **Automation & Outreach** - Email/Cover Letter generation and Browser Automation (Playwright).
 - **✅ Phase 4 Foundation:** **Referrals & Network** - Database models and API for tracking networking contacts.
+- **✅ Phase 5 Complete:** **Authentication & Multi-tenancy** - Secure user accounts with JWT and multi-tenant data isolation.
 - **Modular structure:** `app/db/`, `app/models/`, `app/api/endpoints/`, `app/schemas/`, `app/services/`.
 - **Database models:** Users, Jobs, Resumes, Applications, Outreach, Referrals (shared across all features).
-- **Job CRUD API:** POST, GET, PATCH, DELETE endpoints for job tracking.
-- **Resume API:** `/resumes/tailor` endpoint saves to database and creates Application records.
-- **Search API:** `/search/jobs` endpoint for job discovery with filters.
-- **Automation API:** `/automation/apply` endpoint for browser-based form filling (Greenhouse/Lever).
-- **Email/Outreach API:** `/outreach` endpoints for content generation.
-- **Referrals API:** `/referrals` endpoints for managing networking contacts.
+- **Security:** JWT-based authentication on all protected endpoints; data filtered by `current_user.id`.
+- **Job CRUD API:** Full CRUD for user-specific job tracking.
+- **Resume API:** `/resumes/tailor` and `/resumes/customize` endpoints with auth.
+- **Search API:** `/search/jobs` for discovery with user-specific referral matching.
+- **Automation API:** `/automation/apply` integrated with tailored resumes and auth.
+- **Email/Outreach API:** AI-driven content generation with user context.
 - **Status:**  
   - **Phase 1 (Tracker Database) ✅ COMPLETE**
   - **Phase 2 (Hunter - Job Discovery) ✅ COMPLETE**
   - **Phase 3 (Automation & Outreach) ✅ CORE COMPLETE**
   - **Phase 4 (Referrals Foundation) ✅ COMPLETE**
+  - **Phase 5 (Authentication) ✅ COMPLETE**
 
 **Frontend (Next.js + Tailwind) - Unified:**
+- **✅ Authentication:** Login/Register pages with token-based session management.
+- **✅ AuthGuard:** Route protection for all non-public pages.
+- **✅ Unified Architecture:** Shared `Navbar` with login/logout state and navigation.
 - **✅ Phase 1 Complete:** `/jobs` page for viewing and managing saved jobs.
 - **✅ Phase 2 Complete:** `/hunter` page for job discovery with search and filters.
 - **✅ Kanban Board:** Drag-and-drop job tracking with dnd-kit.
 - **✅ Auto Apply UI:** Integrated "✨ Auto Apply" button in Job Cards.
-- **✅ Unified Architecture:** Shared `Navbar` component for seamless navigation.
 - **Pages implemented:**
   - `/` - Home/Resume Customization ✅
   - `/jobs` - Job Tracker with Kanban Board ✅
   - `/hunter` - Job Discovery ✅
   - `/outreach` - Email/Cover Letter Generation ✅
-  - `/referrals` - Network Referrals (Phase 4 Foundation) ✅
+  - `/referrals` - Network Referrals ✅
+  - `/login` / `/register` - Auth Pages ✅
   - `/settings` - User Settings
 
 ## Overall Project Status
@@ -55,20 +60,19 @@
   - ✅ **Phase 2 COMPLETE**: **Hunter (Job Discovery)** & Kanban Board.
   - ✅ **Phase 3 CORE COMPLETE**: Email/Cover Letter generation & **Browser Automation** (Playwright) integrated.
   - ✅ **Phase 4 FOUNDATION COMPLETE**: Referrals tracking and unified navigation.
-- **Completed in Phase 3 & 4:**
-  - ✅ Email/Cover Letter Generation (from email-genius).
-  - ✅ **Browser Automation:** Playwright-based form filler for Greenhouse/Lever.
-  - ✅ **Auto-Apply UI:** Trigger automation directly from the Kanban board.
-  - ✅ **Unified Navbar:** Navigation across all app sections.
-  - ✅ **Referrals Foundation:** Database and UI for tracking network contacts.
-  - ✅ **Gmail Integration:** Read-only status tracking from inbox.
+  - ✅ **Phase 5 COMPLETE**: **Authentication & Multi-tenancy**.
+- **Completed in Phase 5:**
+  - ✅ **Secure Accounts:** User registration and login with JWT.
+  - ✅ **Multi-tenancy:** All data (Jobs, Resumes, Applications, etc.) isolated by user ID.
+  - ✅ **Authenticated Customization:** Resume tailoring and auto-apply now require a user session.
+  - ✅ **Frontend Route Protection:** AuthGuard restricts access to the dashboard and tools.
 - **Gap to Vision:** 
   - ⏳ **LinkedIn:** Browser extension (future) for easy job saving.
-  - ⏳ **Authentication:** Remove hardcoded user_id, add user accounts.
+  - ⏳ **Deployment:** Production deployment configuration (Docker, Cloud).
 
 - **Next Focus:**  
- 1. Authentication & Multi-tenancy - Secure user accounts.
- 2. Polish UI/UX and deployment.
+ 1. Polish UI/UX - Refine glassmorphism, transitions, and error handling.
+ 2. Production Readiness - Dockerization and Cloud Deployment (AWS/Vercel).
 
 # Next Steps: Evolving "Resume Customizer" into "JobSearchAI"
 
@@ -93,24 +97,15 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
 ### Phase 2: The "Hunter" (Discovery & Filtering) ✅ COMPLETE
 
 ### Phase 3: The "Bot" (Automation & Outreach) ✅ COMPLETE
-*Goal: Reduce manual data entry and increase conversion.*
-
-1.  **Content Generation ✅:** Cover letters and outreach messages integrated.
-2.  **Browser Automation ✅:** 
-    *   ✅ Implemented `app/services/browser_automation.py` using **Playwright**.
-    *   ✅ Automated filling for Greenhouse and Lever forms.
-    *   ✅ Integrated into UI with "Auto Apply" button.
-3.  **Integration ✅:**
-    *   **Gmail ✅:** Read-only access to scan for status updates.
-    *   **LinkedIn:** Browser extension (future) for easy job saving.
 
 ### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ✅ COMPLETE
-*Goal: Use the candidate’s network to surface jobs where they can get warm referrals.*
 
-1.  **Referral Tracker ✅:** Foundation for saving and managing network contacts.
-2.  **Network Intelligence ✅:** 
-    *   ✅ Automatically flag jobs in the "Hunter" or "Tracker" where you have a **first-degree connection** at the company.
-    *   ✅ Prioritize outreach to these contacts to secure a warm referral before applying.
+### Phase 5: "The Platform" (Multi-tenant Security) ✅ COMPLETE
+*Goal: Secure user data and provide a personalized experience.*
+
+1.  **Authentication ✅:** JWT-based login and registration.
+2.  **Multi-tenancy ✅:** Data isolation at the database level for all resources.
+3.  **Authenticated Workflows ✅:** All AI and automation features secured.
 
 ---
 
@@ -118,14 +113,14 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
 
 1. **Milestone 1 – Tracker MVP** ✅ **COMPLETE**
 2. **Milestone 2 – Hunter MVP** ✅ **COMPLETE**
-3. **Milestone 4 – Bot MVP** ✅ **COMPLETE**
-   - ✅ Tailored resume generation.
-   - ✅ Cover letter generation.
-   - ✅ **Browser automation for autofill**.
+3. **Milestone 3 – Bot MVP** ✅ **COMPLETE**
 4. **Milestone 4 – Referrals MVP** ✅ **COMPLETE**
-   - ✅ Networking dashboard.
-   - ✅ **Network-to-Job matching (Intelligence)**.
-5. **Milestone 5 – Integration & Polish** ⏳ **PLANNED**
-   - ✅ Gmail Integration.
-   - Also allow gmail integration to send emails?
-   - ⏳ Authentication & Multi-tenancy.
+5. **Milestone 5 – Platform MVP (Auth & Security)** ✅ **COMPLETE**
+   - ✅ User accounts and JWT auth.
+   - ✅ Multi-tenant data isolation.
+   - ✅ Protected frontend routes.
+6. **Milestone 6 – Integration & Polish** ⏳ **PLANNED**
+   - ✅ Gmail Integration (Status tracking).
+   - ⏳ LinkedIn Browser Extension.
+   - ⏳ Production UI/UX Polish.
+   - ⏳ Deployment.
