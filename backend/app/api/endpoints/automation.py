@@ -7,6 +7,10 @@ from app.services.browser_automation import BrowserAutomationService
 from app.api import deps
 from app.models.user import User
 
+from app.models.application import Application
+from app.models.resume import Resume
+import os
+
 router = APIRouter(prefix="/automation", tags=["automation"])
 logger = logging.getLogger(__name__)
 
@@ -21,7 +25,6 @@ async def auto_apply(
     """
     
     # 2. Prepare User Data
-    # Merge explicit request data with user preferences/profile
     user_prefs = current_user.preferences if current_user.preferences else {}
     profile = user_prefs.get("profile", {})
     
@@ -33,17 +36,38 @@ async def auto_apply(
         "linkedin": request.linkedin or profile.get("linkedin", "")
     }
     
-    # 3. Resume Path
-    # If not provided, try to find the latest resume for the user?
-    # For now, require it or use a placeholder if testing.
+    # 3. Resume Path Resolution
     resume_path = request.resume_path
     
+    # If job_id provided, try to find a tailored resume
+    if not resume_path and request.job_id:
+        app = db.query(Application).filter(
+            Application.job_id == request.job_id,
+            Application.user_id == current_user.id
+        ).order_by(Application.created_at.desc()).first()
+        
+        if app and app.tailored_resume_path:
+            resume_path = app.tailored_resume_path
+            # Ensure path is absolute if it's relative to project root
+            if not os.path.isabs(resume_path):
+                # Check if it starts with 'output/'
+                if not resume_path.startswith('output/'):
+                    # It might be just the filename or pdfs/filename.pdf
+                    # We'll try to find it in the output dir
+                    pass
+    
+    # If still no resume path, find latest resume
+    if not resume_path:
+        latest_resume = db.query(Resume).filter(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()).first()
+        if latest_resume and latest_resume.file_path:
+             # This is tricky because we don't save the original PDF yet.
+             # We only have raw_text.
+             # For now, if no tailored resume, we can't easily auto-apply with a PDF.
+             pass
+    
     # 4. Trigger Automation
-    # using the service
     service = BrowserAutomationService()
     
-    # We await it here to return the result immediately for the UI feedback.
-    # In a real app, we'd return a task ID.
     try:
         result = await service.apply_to_job(request.job_url, user_data, resume_path)
         return result

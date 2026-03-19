@@ -24,8 +24,69 @@ from app.services.resume_processor import (
 )
 from app.api import deps
 from app.models.user import User
+from typing import Dict, Any
 
 router = APIRouter(prefix="/resumes", tags=["resumes"])
+
+
+@router.post("/customize", response_model=Dict[str, Any])
+async def customize_resume_only(
+    job_description_text: str = Form(..., description="Job description as text"),
+    resume: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Customize a resume without creating an application or linking to a job.
+    Similar to the old /customize-resume/ but authenticated.
+    """
+    # Read and extract text from the resume
+    resume_content = await resume.read()
+    resume_text = extract_text_from_pdf(resume_content)
+    
+    # Extract structured data
+    resume_data = extract_resume_data(resume_text)
+    job_description_data = extract_job_description_data(job_description_text)
+    
+    # Calculate initial ATS score
+    initial_ats_analysis = calculate_ats_score(resume_data, job_description_data, is_optimized=False)
+    initial_score = initial_ats_analysis.get("score", 35)
+    
+    # Customize the resume
+    customized_resume = tailor_resume_for_job(resume_data, job_description_data)
+    customized_resume["base_score"] = initial_score
+    
+    # Calculate final ATS score
+    final_ats_analysis = calculate_ats_score(customized_resume, job_description_data, is_optimized=True)
+    if "base_score" in customized_resume:
+        del customized_resume["base_score"]
+    
+    # Generate filename
+    filename = create_resume_filename(customized_resume, job_description_data)
+    
+    # Generate PDF and JSON
+    pdf_result = generate_resume_pdf(customized_resume, filename)
+    json_result = save_resume_json(customized_resume, filename)
+    
+    final_score = final_ats_analysis.get("score", initial_score + 40)
+    
+    response = {
+        "success": True,
+        "customized_resume": customized_resume,
+        "modifications_summary": customized_resume.get("modifications_summary", ""),
+        "initial_ats_score": initial_score,
+        "initial_ats_feedback": initial_ats_analysis.get("improvements", []),
+        "final_ats_score": final_score,
+        "final_ats_feedback": final_ats_analysis.get("improvements", []),
+        "score_improvement": final_score - initial_score
+    }
+    
+    if pdf_result:
+        response.update(pdf_result)
+    if json_result:
+        response.update(json_result)
+        
+    return response
 
 
 @router.post("/upload", response_model=ResumeResponse, status_code=201)
@@ -158,6 +219,7 @@ async def tailor_resume_for_job_endpoint(
     
     # Create or update application record
     application = db.query(Application).filter(
+        Application.user_id == current_user.id,
         Application.job_id == job_id,
         Application.resume_id == db_resume.id
     ).first()
@@ -169,6 +231,7 @@ async def tailor_resume_for_job_endpoint(
     else:
         # Create new application
         application = Application(
+            user_id=current_user.id,
             job_id=job_id,
             resume_id=db_resume.id,
             tailored_resume_path=pdf_result.get("pdf_path") if pdf_result else None,

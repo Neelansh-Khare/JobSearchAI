@@ -11,6 +11,7 @@ class Application(Base):
     __tablename__ = "applications"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
     resume_id = Column(Integer, ForeignKey("resumes.id"), nullable=False, index=True)
     tailored_resume_path = Column(String, nullable=True)  # Path to tailored PDF
@@ -24,5 +25,6 @@ class Application(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
+    user = relationship("User", back_populates="applications")
     job = relationship("Job", back_populates="applications")
     resume = relationship("Resume", back_populates="applications")

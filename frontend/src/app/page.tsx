@@ -23,13 +23,16 @@ export default function Home() {
     setError(null);
     
     try {
-      const data = await JobSearchAPI.customizeResume(jobDescription, resumeFile);
-      setResult(data);
-      
-      // If job was saved, you could show a success message or redirect
+      let data;
       if (jobId) {
+        // If job was saved, use tailorResume to link it in the database
+        data = await JobSearchAPI.tailorResume(jobId, resumeFile);
         console.log(`Job saved with ID: ${jobId}. Resume customized and linked to this job.`);
+      } else {
+        // Otherwise use generic customizeResume
+        data = await JobSearchAPI.customizeResume(jobDescription, resumeFile);
       }
+      setResult(data);
     } catch (err) {
       console.error('Error:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');

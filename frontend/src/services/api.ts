@@ -188,7 +188,7 @@ export const JobSearchAPI = {
     formData.append('job_description_text', jobDescription);
     formData.append('resume', resumeFile);
 
-    const response = await fetch(`${API_BASE_URL}/customize-resume/`, {
+    const response = await fetch(`${API_BASE_URL}/resumes/customize`, {
       method: 'POST',
       headers: getHeaders('multipart/form-data'),
       body: formData,
@@ -197,6 +197,26 @@ export const JobSearchAPI = {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || 'Failed to customize resume');
+    }
+
+    return response.json();
+  },
+
+  tailorResume: async (jobId: number, resumeFile?: File, resumeId?: number): Promise<any> => {
+    const formData = new FormData();
+    formData.append('job_id', jobId.toString());
+    if (resumeFile) formData.append('resume_file', resumeFile);
+    if (resumeId) formData.append('resume_id', resumeId.toString());
+
+    const response = await fetch(`${API_BASE_URL}/resumes/tailor`, {
+      method: 'POST',
+      headers: getHeaders('multipart/form-data'),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to tailor resume');
     }
 
     return response.json();
@@ -353,12 +373,13 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  autoApply: async (jobUrl: string): Promise<unknown> => {
+  autoApply: async (jobUrl: string, jobId?: number): Promise<unknown> => {
     const response = await fetch(`${API_BASE_URL}/automation/apply`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify({
         job_url: jobUrl,
+        job_id: jobId,
       }),
     });
 

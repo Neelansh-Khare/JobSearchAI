@@ -15,6 +15,7 @@ class ApplicationCreate(BaseModel):
 
 class ApplicationResponse(BaseModel):
     id: int
+    user_id: int
     job_id: int
     resume_id: int
     tailored_resume_path: Optional[str]

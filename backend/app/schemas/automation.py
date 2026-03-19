@@ -3,8 +3,10 @@ from typing import Optional
 
 class AutoApplyRequest(BaseModel):
     job_url: str
+    job_id: Optional[int] = None
+    resume_id: Optional[int] = None
     user_id: Optional[int] = None # Filled from auth
-    resume_path: Optional[str] = None # Or use a resume_id to fetch from DB
+    resume_path: Optional[str] = None # Explicit path override
     
     # Optional overrides
     first_name: Optional[str] = None
