@@ -12,6 +12,7 @@ const navItems = [
   { name: 'Hunter', href: '/hunter', icon: '🔍' },
   { name: 'Outreach', href: '/outreach', icon: '📧' },
   { name: 'Referrals', href: '/referrals', icon: '🤝' },
+  { name: 'Settings', href: '/settings', icon: '⚙️' },
 ];
 
 export default function Navbar() {

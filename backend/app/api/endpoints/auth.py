@@ -8,7 +8,7 @@ from app.api import deps
 from app.core import security
 from app.db.database import get_db
 from app.models.user import User as UserModel
-from app.schemas.user import Token, UserCreate, User as UserSchema
+from app.schemas.user import Token, UserCreate, User as UserSchema, UserUpdate
 
 router = APIRouter()
 
@@ -68,4 +68,33 @@ def read_user_me(
     """
     Get current user.
     """
+    return current_user
+
+@router.put("/me", response_model=UserSchema)
+def update_user_me(
+    *,
+    db: Session = Depends(get_db),
+    user_in: UserUpdate,
+    current_user: UserModel = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Update own user.
+    """
+    if user_in.password is not None:
+        current_user.password_hash = security.get_password_hash(user_in.password)
+    if user_in.full_name is not None:
+        current_user.full_name = user_in.full_name
+    if user_in.email is not None:
+        # Check if email is already taken
+        user = db.query(UserModel).filter(UserModel.email == user_in.email).first()
+        if user and user.id != current_user.id:
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered with another account.",
+            )
+        current_user.email = user_in.email
+    
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
     return current_user

@@ -179,6 +179,21 @@ export const JobSearchAPI = {
     return response.json();
   },
 
+  updateCurrentUser: async (userData: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update profile');
+    }
+
+    return response.json();
+  },
+
   logout: () => {
     setToken(null);
   },

@@ -45,7 +45,7 @@ export default function OutreachPage() {
         additional_context: additionalContext,
       });
 
-      let content = response.email_content;
+      const content = response.email_content;
 
       // Try to extract subject
       if (content.startsWith('Subject:')) {
