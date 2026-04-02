@@ -276,6 +276,7 @@ See `nextSteps.md` Section 11 for detailed deployment instructions.
 ## 📚 Documentation
 
 - **Project Roadmap**: See `nextSteps.md` for detailed phases and features
+- **Database Setup**: See `docs/DATABASE_SETUP.md` for detailed database configuration and initialization
 - **S3 Integration**: See `README_S3_INTEGRATION.md`
 
 ## 🤝 Contributing
