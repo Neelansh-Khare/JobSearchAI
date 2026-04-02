@@ -34,7 +34,8 @@ def create_job(
         status=job.status or JobStatus.NEW,
         salary_range=job.salary_range,
         remote_policy=job.remote_policy,
-        location=job.location
+        location=job.location,
+        notes=job.notes
     )
     db.add(db_job)
     db.commit()

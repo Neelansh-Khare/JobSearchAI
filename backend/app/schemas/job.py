@@ -18,6 +18,7 @@ class JobCreate(BaseModel):
     salary_range: Optional[str] = Field(None, description="Salary range")
     remote_policy: Optional[str] = Field(None, description="Remote policy (Remote, Hybrid, On-site)")
     location: Optional[str] = Field(None, description="Job location")
+    notes: Optional[str] = Field(None, description="User notes for this job")
 
 
 class JobUpdate(BaseModel):
@@ -30,6 +31,7 @@ class JobUpdate(BaseModel):
     salary_range: Optional[str] = None
     remote_policy: Optional[str] = None
     location: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class JobResponse(BaseModel):
@@ -44,6 +46,7 @@ class JobResponse(BaseModel):
     salary_range: Optional[str]
     remote_policy: Optional[str]
     location: Optional[str]
+    notes: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime]
     network_contacts: List[ReferralSchema] = []

@@ -15,6 +15,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [jobUrl, setJobUrl] = useState('');
+  const [jobNotes, setJobNotes] = useState('');
   const [saveJobFirst, setSaveJobFirst] = useState(true);
   const [savingJob, setSavingJob] = useState(false);
 
@@ -60,6 +61,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
           company: companyName,
           description: jobDescription,
           url: jobUrl || undefined,
+          notes: jobNotes || undefined,
           source: 'Manual',
           status: 'New',
         };
@@ -136,6 +138,22 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
               placeholder="https://..."
               value={jobUrl}
               onChange={(e) => setJobUrl(e.target.value)}
+            />
+          </div>
+        )}
+
+        {saveJobFirst && (
+          <div>
+            <label htmlFor="jobNotes" className="block mb-2 font-medium">
+              Notes (optional)
+            </label>
+            <textarea
+              id="jobNotes"
+              rows={3}
+              className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-white/30"
+              placeholder="Add your own notes about this job application"
+              value={jobNotes}
+              onChange={(e) => setJobNotes(e.target.value)}
             />
           </div>
         )}

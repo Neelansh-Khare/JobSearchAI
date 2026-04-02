@@ -32,6 +32,7 @@ class Job(Base):
     salary_range = Column(String, nullable=True)  # e.g., "$100k-$150k"
     remote_policy = Column(String, nullable=True)  # e.g., "Remote", "Hybrid", "On-site"
     location = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)  # User notes for this job
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

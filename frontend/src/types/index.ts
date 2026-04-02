@@ -116,6 +116,7 @@ export interface Job {
   salary_range?: string;
   remote_policy?: string;
   location?: string;
+  notes?: string;
   created_at: string;
   updated_at?: string;
   network_contacts?: Referral[];
@@ -131,6 +132,7 @@ export interface JobCreate {
   salary_range?: string;
   remote_policy?: string;
   location?: string;
+  notes?: string;
 }
 
 export interface JobUpdate {
@@ -143,6 +145,7 @@ export interface JobUpdate {
   salary_range?: string;
   remote_policy?: string;
   location?: string;
+  notes?: string;
 }
 
 export interface Referral {

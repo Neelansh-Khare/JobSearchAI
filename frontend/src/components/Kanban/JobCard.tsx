@@ -14,6 +14,10 @@ interface JobCardProps {
 
 export default function JobCard({ job, onDelete }: JobCardProps) {
   const [isApplying, setIsApplying] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [notes, setNotes] = useState(job.notes || '');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -43,6 +47,19 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
       alert('Failed to apply: ' + (err as Error).message);
     } finally {
       setIsApplying(false);
+    }
+  };
+
+  const handleSaveNotes = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSavingNotes(true);
+    try {
+      await JobSearchAPI.updateJob(job.id, { notes });
+      setIsSavingNotes(false);
+    } catch (err) {
+      console.error('Failed to save notes:', err);
+      alert('Failed to save notes');
+      setIsSavingNotes(false);
     }
   };
 
@@ -76,8 +93,39 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
             </span>
           </div>
         )}
+
+        <div className="mt-2 mb-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowNotes(!showNotes);
+            }}
+            className="text-[10px] text-gray-400 hover:text-gray-300 flex items-center gap-1"
+          >
+            {showNotes ? '▼ Hide Notes' : '▶ Show Notes'} {job.notes && !showNotes && '📝'}
+          </button>
+          
+          {showNotes && (
+            <div className="mt-2 space-y-2" onClick={(e) => e.stopPropagation()}>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                onPointerDown={(e) => e.stopPropagation()}
+                className="w-full p-2 text-xs bg-white/5 border border-white/10 rounded outline-none focus:border-white/30 min-h-[60px]"
+                placeholder="Add notes about this job..."
+              />
+              <button
+                onClick={handleSaveNotes}
+                disabled={isSavingNotes}
+                className="text-[10px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded"
+              >
+                {isSavingNotes ? 'Saving...' : 'Save Notes'}
+              </button>
+            </div>
+          )}
+        </div>
         
-        <div className="flex items-center justify-between mt-2">
+        <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/5">
             {job.url && (
             <a
                 href={job.url}
