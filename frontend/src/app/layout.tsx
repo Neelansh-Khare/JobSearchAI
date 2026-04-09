@@ -40,7 +40,7 @@ export default function RootLayout({
       >
         <Navbar />
         <Toaster position="top-center" />
-        <main className="pt-16">
+        <main className="pt-16 animate-fade-in">
           <AuthGuard>
             {children}
           </AuthGuard>

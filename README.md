@@ -266,12 +266,27 @@ NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 
 ## 🚢 Deployment
 
-See `nextSteps.md` Section 11 for detailed deployment instructions.
+### Docker Deployment (Recommended)
 
-**Quick Deploy Options:**
-- **Backend**: Railway, Render, or Fly.io
-- **Frontend**: Vercel or Netlify
-- **Database**: Supabase, Neon, or Railway PostgreSQL
+The easiest way to run JobSearchAI is using Docker Compose.
+
+1. **Prerequisites:**
+   - Docker and Docker Compose installed.
+
+2. **Configure Environment Variables:**
+   - Create a `.env` file in the `backend/` directory with your API keys (see [Backend Setup](#backend-setup)).
+
+3. **Build and Run:**
+   ```bash
+   docker-compose up --build
+   ```
+
+4. **Access the Application:**
+   - Frontend: `http://localhost:3000`
+   - Backend API Docs: `http://localhost:8000/docs`
+
+### Manual Deployment
+See `nextSteps.md` Section 11 for detailed manual deployment instructions.
 
 ## 📚 Documentation
 
