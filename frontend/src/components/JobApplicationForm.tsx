@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import GlassCard from './GlassCard';
 import GlassButton from './GlassButton';
 import { JobSearchAPI } from '@/services/api';
@@ -46,12 +47,12 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!jobDescription || !resumeFile) {
-      alert('Please provide both a job description and a resume file');
+      toast.error('Please provide both a job description and a resume file');
       return;
     }
 
     let jobId: number | undefined = undefined;
-    
+
     try {
       // Save job first if enabled
       if (saveJobFirst && jobTitle && companyName) {
@@ -67,12 +68,17 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
         };
         const savedJob = await JobSearchAPI.createJob(jobData);
         jobId = savedJob.id;
+        toast.success(`Job saved at ${companyName}!`);
         setSavingJob(false);
       }
-      
+
+      const tailoringToast = toast.loading('Tailoring your resume with AI...');
       await onSubmit(jobDescription, resumeFile, jobId);
+      toast.dismiss(tailoringToast);
+      toast.success('Resume customized successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
+      toast.error('Failed to process application. Please try again.');
       setSavingJob(false);
     }
   };
@@ -172,7 +178,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
             required
           />
         </div>
-        
+
         <div>
           <label htmlFor="resumeFile" className="block mb-2 font-medium">
             Upload Resume (PDF)
@@ -208,9 +214,9 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
           <GlassButton 
             type="submit" 
             className="text-lg py-3 px-12 rounded-full" 
-            disabled={isLoading || savingJob}
+            isLoading={isLoading || savingJob}
           >
-            {savingJob ? 'Saving Job...' : isLoading ? 'Processing...' : saveJobFirst ? 'Save Job & Customize Resume' : 'Process Application'}
+            {saveJobFirst ? 'Save Job & Customize Resume' : 'Process Application'}
           </GlassButton>
         </div>
       </form>
@@ -219,3 +225,4 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
 };
 
 export default JobApplicationForm; 
+ 

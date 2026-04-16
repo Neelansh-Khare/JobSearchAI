@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import JobApplicationForm from "@/components/JobApplicationForm";
 import ResultDisplay from "@/components/ResultDisplay";
 import { JobSearchAPI, getApiBaseUrl } from "@/services/api";
@@ -10,7 +11,6 @@ import { CustomizeResumeResponse } from '@/types';
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CustomizeResumeResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   // Handle client-side only rendering to avoid hydration errors
@@ -20,7 +20,6 @@ export default function Home() {
 
   const handleSubmit = async (jobDescription: string, resumeFile: File, jobId?: number) => {
     setIsLoading(true);
-    setError(null);
     
     try {
       let data;
@@ -35,7 +34,7 @@ export default function Home() {
       setResult(data);
     } catch (err) {
       console.error('Error:', err);
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      toast.error(err instanceof Error ? err.message : 'An unexpected error occurred during customization');
       setResult(null);
     } finally {
       setIsLoading(false);
@@ -44,47 +43,46 @@ export default function Home() {
 
   const handleReset = () => {
     setResult(null);
-    setError(null);
   };
 
   // Return null during server-side rendering or first client-side render
-  // This prevents hydration errors from browser extensions
   if (!isMounted) {
     return null;
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <main className="max-w-7xl mx-auto space-y-16 pb-20">
-        <section className="mt-10 text-center">
-          <div className="flex justify-end mb-4">
-            <a href="/jobs" className="text-blue-400 hover:text-blue-300">
-              View My Jobs →
+    <div className="min-h-screen p-4 md:p-8 animate-fade-in">
+      <main className="max-w-7xl mx-auto space-y-20 pb-20">
+        <section className="mt-16 text-center">
+          <div className="inline-block px-4 py-1.5 mb-6 glassmorphism text-indigo-300 text-sm font-semibold tracking-wide uppercase">
+            Powered by Advanced AI
+          </div>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400 leading-tight">
+            AI-Powered Resume <br className="hidden md:block" /> Customization
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+            Optimize your resume for specific job descriptions instantly. 
+            Highlight your strengths and bridge the gap to your next dream role.
+          </p>
+          <div className="flex justify-center gap-4">
+            <a href="/jobs" className="glassmorphism px-8 py-3 bg-indigo-600/20 hover:bg-indigo-600/30 text-white font-bold transition-all">
+              Manage Applications
+            </a>
+            <a href="#about" className="glassmorphism px-8 py-3 hover:bg-white/10 text-white font-bold transition-all">
+              How it works
             </a>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            AI-Powered Resume Customization
-          </h1>
-          <p className="text-lg md:text-xl opacity-80 mb-8 max-w-3xl mx-auto">
-            Optimize your resume for specific job descriptions using advanced AI. 
-            Get personalized suggestions to improve your chances of landing your dream job.
-          </p>
         </section>
 
         {!result ? (
-          <section>
-            <h2 className="text-2xl font-bold text-center mb-8">Get Started</h2>
+          <section className="relative">
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl -z-10"></div>
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl -z-10"></div>
+            <h2 className="text-3xl font-bold text-center mb-10 text-white">Start Customizing</h2>
             <JobApplicationForm onSubmit={handleSubmit} isLoading={isLoading} />
-            
-            {error && (
-              <GlassCard className="p-6 mt-6 bg-red-500/10 max-w-4xl mx-auto">
-                <h3 className="text-xl font-bold mb-2">Error</h3>
-                <p>{error}</p>
-              </GlassCard>
-            )}
           </section>
         ) : (
-          <section>
+          <section className="animate-fade-in">
             <ResultDisplay 
               result={result} 
               onReset={handleReset} 
@@ -93,32 +91,35 @@ export default function Home() {
           </section>
         )}
 
-        <section id="about" className="py-10 max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <GlassCard className="p-6 text-center">
-              <div className="text-3xl mb-4">📄</div>
-              <h3 className="text-xl font-bold mb-2">Upload</h3>
-              <p>Upload your resume and paste the job description you&apos;re applying for.</p>
+        <section id="about" className="py-20 max-w-5xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-white mb-4">How It Works</h2>
+            <div className="h-1 w-20 bg-indigo-500 mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <GlassCard className="p-8 text-center border-white/5 hover:border-indigo-500/30">
+              <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">📄</div>
+              <h3 className="text-2xl font-bold mb-3 text-white">Upload</h3>
+              <p className="text-gray-400 leading-relaxed">Upload your current resume and paste the target job description.</p>
             </GlassCard>
             
-            <GlassCard className="p-6 text-center">
-              <div className="text-3xl mb-4">🤖</div>
-              <h3 className="text-xl font-bold mb-2">Process</h3>
-              <p>Our AI analyzes both documents to identify matches and opportunities for improvement.</p>
+            <GlassCard className="p-8 text-center border-white/5 hover:border-indigo-500/30">
+              <div className="w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">🤖</div>
+              <h3 className="text-2xl font-bold mb-3 text-white">Process</h3>
+              <p className="text-gray-400 leading-relaxed">Our AI identifies key skills and requirements to tailor your profile.</p>
             </GlassCard>
             
-            <GlassCard className="p-6 text-center">
-              <div className="text-3xl mb-4">✨</div>
-              <h3 className="text-xl font-bold mb-2">Optimize</h3>
-              <p>Get a customized resume and talking points to highlight your relevant experience.</p>
+            <GlassCard className="p-8 text-center border-white/5 hover:border-indigo-500/30">
+              <div className="w-16 h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center text-3xl mx-auto mb-6">✨</div>
+              <h3 className="text-2xl font-bold mb-3 text-white">Optimize</h3>
+              <p className="text-gray-400 leading-relaxed">Download your optimized resume and start applying with confidence.</p>
             </GlassCard>
           </div>
         </section>
       </main>
 
-      <footer className="glassmorphism mt-10 p-6 text-center max-w-7xl mx-auto">
-        <p>© {new Date().getFullYear()} Resume AI. All rights reserved.</p>
+      <footer className="mt-20 border-t border-white/10 py-10 text-center text-gray-500">
+        <p>© {new Date().getFullYear()} JobSearchAI. All rights reserved.</p>
       </footer>
     </div>
   );
