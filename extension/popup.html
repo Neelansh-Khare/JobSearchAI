@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+    }
+    .glass-container {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #60a5fa;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: opacity 0.2s;
+    }
+    .btn:hover {
+      opacity: 0.9;
+    }
+    .btn:disabled {
+      background: #4b5563;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+    .login-section {
+      display: none;
+    }
+    .job-section {
+      display: none;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: white;
+      box-sizing: border-box;
+    }
+    .loader {
+      display: none;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="glass-container">
+    <h2>JobSearchAI</h2>
+    
+    <div id="loader" class="loader"></div>
+
+    <div id="login-section" class="login-section">
+      <p>Please log in to your account.</p>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button id="login-btn" class="btn">Login</button>
+    </div>
+
+    <div id="job-section" class="job-section">
+      <div id="job-info">
+        <p id="job-title" style="font-weight: 600; margin-bottom: 4px;"></p>
+        <p id="job-company" style="font-size: 14px; color: #94a3b8; margin-top: 0;"></p>
+      </div>
+      <button id="save-btn" class="btn">Save to Tracker</button>
+    </div>
+
+    <div id="not-job-page" style="display: none;">
+      <p>Go to a LinkedIn job page to save it.</p>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

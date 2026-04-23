@@ -227,7 +227,7 @@ async def tailor_resume_for_job_endpoint(
     if application:
         # Update existing application
         application.tailored_resume_path = pdf_result.get("pdf_path") if pdf_result else None
-        application.tailored_resume_s3_url = pdf_result.get("s3_url") if pdf_result else None
+        application.tailored_resume_s3_url = pdf_result.get("s3_pdf_url") if pdf_result else None
     else:
         # Create new application
         application = Application(
@@ -235,7 +235,7 @@ async def tailor_resume_for_job_endpoint(
             job_id=job_id,
             resume_id=db_resume.id,
             tailored_resume_path=pdf_result.get("pdf_path") if pdf_result else None,
-            tailored_resume_s3_url=pdf_result.get("s3_url") if pdf_result else None
+            tailored_resume_s3_url=pdf_result.get("s3_pdf_url") if pdf_result else None
         )
         db.add(application)
     
@@ -262,7 +262,7 @@ async def tailor_resume_for_job_endpoint(
         "score_improvement": final_score - initial_score,
         "customized_resume": customized_resume,
         "pdf_path": pdf_result.get("pdf_path") if pdf_result else None,
-        "s3_url": pdf_result.get("s3_url") if pdf_result else None
+        "s3_url": pdf_result.get("s3_pdf_url") if pdf_result else None
     }
     
     return response_dict

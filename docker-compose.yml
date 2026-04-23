@@ -1,6 +1,21 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: jobsearchuser
+      POSTGRES_PASSWORD: jobsearchpassword
+      POSTGRES_DB: jobsearchdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobsearchuser -d jobsearchdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: ./backend
@@ -8,10 +23,14 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend/jobsearchai.db:/app/jobsearchai.db
       - ./backend/output:/app/output
+    environment:
+      - DATABASE_URL=postgresql://jobsearchuser:jobsearchpassword@db:5432/jobsearchdb
     env_file:
       - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
     restart: always
 
   frontend:
@@ -25,3 +44,6 @@ services:
     depends_on:
       - backend
     restart: always
+
+volumes:
+  postgres_data:

@@ -98,7 +98,17 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
 
 ### Phase 3: The "Bot" (Automation & Outreach) ✅ COMPLETE
 
-### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ✅ COMPLETE
+### Phase 4: "Jobs by Referral" (Network-Powered Discovery) ⏳ IN PROGRESS
+*Goal: Leverage your professional network to find "warm" opportunities.*
+
+1.  **Connection Syncing**:
+    *   Import LinkedIn connections via extension or CSV upload.
+    *   Store connections with their current company and role.
+2.  **Reverse Job Search**:
+    *   **Logic**: Automatically search for open roles at companies where your connections work.
+    *   **Referral Matching**: Flag these jobs in the "Hunter" view with a "Contact Found" badge.
+3.  **Automated Referral Outreach**:
+    *   Generate personalized messages to connections when a job is found at their company.
 
 ### Phase 5: "The Platform" (Multi-tenant Security) ✅ COMPLETE
 *Goal: Secure user data and provide a personalized experience.*
