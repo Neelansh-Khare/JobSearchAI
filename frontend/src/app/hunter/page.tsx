@@ -203,9 +203,16 @@ export default function HunterPage() {
                         
                         {job.network_contacts && job.network_contacts.length > 0 && (
                           <div className="mb-4">
-                            <span className="bg-green-500/20 text-green-300 text-xs px-3 py-1.5 rounded-full border border-green-500/30 inline-flex items-center gap-1.5 font-medium">
-                              🤝 {job.network_contacts.length} Connection{job.network_contacts.length === 1 ? '' : 's'} here
-                            </span>
+                            <div className="flex justify-between items-center bg-green-500/10 p-2 rounded-lg border border-green-500/20">
+                              <span className="text-green-300 text-xs font-medium flex items-center gap-1.5">
+                                🤝 {job.network_contacts.length} Connection{job.network_contacts.length === 1 ? '' : 's'} here
+                              </span>
+                              <Link href={`/referrals?company=${encodeURIComponent(job.company)}`}>
+                                <button className="text-[10px] font-bold text-green-400 hover:text-green-300 underline underline-offset-2">
+                                  Request Referral
+                                </button>
+                              </Link>
+                            </div>
                           </div>
                         )}
 

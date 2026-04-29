@@ -466,6 +466,51 @@ export const JobSearchAPI = {
     }
   },
 
+  uploadReferralsCSV: async (file: File): Promise<{ message: string; count: number }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE_URL}/referrals/upload-csv`, {
+      method: 'POST',
+      headers: getHeaders('multipart/form-data'),
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to upload CSV');
+    }
+
+    return response.json();
+  },
+
+  generateReferralMessage: async (referralId: number, tone: string = 'Professional'): Promise<{ message: string }> => {
+    const response = await fetch(`${API_BASE_URL}/referrals/${referralId}/generate-message?tone=${tone}`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to generate referral message');
+    }
+
+    return response.json();
+  },
+
+  discoverNetworkJobs: async (query: string = 'Software Engineer'): Promise<{ success: boolean; jobs: any[] }> => {
+    const response = await fetch(`${API_BASE_URL}/referrals/jobs/discover?query=${encodeURIComponent(query)}`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to discover network jobs');
+    }
+
+    return response.json();
+  },
+
   scanGmail: async (daysBack: number = 7): Promise<{ updates_found: number; updates: any[] }> => {
     const response = await fetch(`${API_BASE_URL}/gmail/scan?days_back=${daysBack}`, {
       method: 'POST',
