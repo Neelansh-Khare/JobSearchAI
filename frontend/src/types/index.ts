@@ -104,6 +104,25 @@ export interface CustomizeResumeResponse {
 
 export type JobStatus = 'New' | 'Saved' | 'Applied' | 'Interview' | 'Offer' | 'Rejected';
 
+export interface Application {
+  id: number;
+  user_id: number;
+  job_id: number;
+  resume_id: number;
+  tailored_resume_path?: string;
+  tailored_resume_s3_url?: string;
+  cover_letter_text?: string;
+  cover_letter_s3_url?: string;
+  applied_at?: string;
+  last_status_update?: string;
+  current_stage?: string;
+  interview_date?: string;
+  interview_notes?: string;
+  interviewer_names?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface Job {
   id: number;
   user_id: number;
@@ -120,6 +139,7 @@ export interface Job {
   created_at: string;
   updated_at?: string;
   network_contacts?: Referral[];
+  applications?: Application[];
 }
 
 export interface JobCreate {

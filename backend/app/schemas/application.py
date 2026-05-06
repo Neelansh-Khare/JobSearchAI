@@ -13,6 +13,15 @@ class ApplicationCreate(BaseModel):
     applied_at: Optional[datetime] = Field(None, description="Application submission date")
 
 
+class ApplicationUpdate(BaseModel):
+    cover_letter_text: Optional[str] = None
+    applied_at: Optional[datetime] = None
+    current_stage: Optional[str] = None
+    interview_date: Optional[datetime] = None
+    interview_notes: Optional[str] = None
+    interviewer_names: Optional[str] = None
+
+
 class ApplicationResponse(BaseModel):
     id: int
     user_id: int
@@ -25,6 +34,9 @@ class ApplicationResponse(BaseModel):
     applied_at: Optional[datetime]
     last_status_update: Optional[datetime]
     current_stage: Optional[str]
+    interview_date: Optional[datetime]
+    interview_notes: Optional[str]
+    interviewer_names: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
 

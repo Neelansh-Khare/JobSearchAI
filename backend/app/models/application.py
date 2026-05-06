@@ -21,6 +21,12 @@ class Application(Base):
     applied_at = Column(DateTime(timezone=True), nullable=True)
     last_status_update = Column(DateTime(timezone=True), nullable=True)
     current_stage = Column(String, nullable=True)  # e.g., "Application Submitted", "Phone Screen", "On-site"
+    
+    # Interview Fields
+    interview_date = Column(DateTime(timezone=True), nullable=True)
+    interview_notes = Column(Text, nullable=True)
+    interviewer_names = Column(String, nullable=True)
+    
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -17,6 +17,13 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState(job.notes || '');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [showInterview, setShowInterview] = useState(false);
+  
+  const application = job.applications?.[0];
+  const [interviewDate, setInterviewDate] = useState(application?.interview_date?.split('T')[0] || '');
+  const [interviewNotes, setInterviewNotes] = useState(application?.interview_notes || '');
+  const [interviewerNames, setInterviewerNames] = useState(application?.interviewer_names || '');
+  const [isSavingInterview, setIsSavingInterview] = useState(false);
 
   const {
     attributes,
@@ -60,6 +67,29 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
       console.error('Failed to save notes:', err);
       alert('Failed to save notes');
       setIsSavingNotes(false);
+    }
+  };
+
+  const handleSaveInterview = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!application) {
+      alert('No application found for this job. You must apply or customize a resume first.');
+      return;
+    }
+
+    setIsSavingInterview(true);
+    try {
+      await JobSearchAPI.updateApplication(application.id, {
+        interview_date: interviewDate ? new Date(interviewDate).toISOString() : null,
+        interview_notes: interviewNotes,
+        interviewer_names: interviewerNames,
+      });
+      setIsSavingInterview(false);
+      setShowInterview(false);
+    } catch (err) {
+      console.error('Failed to save interview info:', err);
+      alert('Failed to save interview info');
+      setIsSavingInterview(false);
     }
   };
 
@@ -120,6 +150,64 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
                 className="text-[10px] bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 px-2 py-1 rounded"
               >
                 {isSavingNotes ? 'Saving...' : 'Save Notes'}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Interview Section */}
+        <div className="mt-2 mb-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowInterview(!showInterview);
+            }}
+            className={`text-[10px] flex items-center gap-1 transition-colors ${
+              application?.interview_date ? 'text-purple-400 font-bold' : 'text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            {showInterview ? '▼ Hide Interview' : '▶ Manage Interview'} {application?.interview_date && !showInterview && '🗓️'}
+          </button>
+          
+          {showInterview && (
+            <div className="mt-2 space-y-2 p-3 bg-white/5 rounded-lg border border-white/10" onClick={(e) => e.stopPropagation()}>
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase text-gray-500 font-bold">Interview Date</label>
+                <input
+                  type="date"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="w-full p-1.5 text-xs bg-black/20 border border-white/10 rounded outline-none text-white"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase text-gray-500 font-bold">Interviewers</label>
+                <input
+                  type="text"
+                  value={interviewerNames}
+                  onChange={(e) => setInterviewerNames(e.target.value)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  placeholder="e.g. Jane Smith, John Doe"
+                  className="w-full p-1.5 text-xs bg-black/20 border border-white/10 rounded outline-none text-white"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase text-gray-500 font-bold">Prep Notes</label>
+                <textarea
+                  value={interviewNotes}
+                  onChange={(e) => setInterviewNotes(e.target.value)}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="w-full p-1.5 text-xs bg-black/20 border border-white/10 rounded outline-none text-white min-h-[40px]"
+                  placeholder="Questions to ask, points to mention..."
+                />
+              </div>
+              <button
+                onClick={handleSaveInterview}
+                disabled={isSavingInterview}
+                className="w-full text-[10px] bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 py-1.5 rounded transition-all"
+              >
+                {isSavingInterview ? 'Saving...' : 'Save Interview Info'}
               </button>
             </div>
           )}

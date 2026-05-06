@@ -318,6 +318,34 @@ export const JobSearchAPI = {
     }
   },
 
+  getJobStats: async (): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/jobs/stats`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to fetch job stats');
+    }
+
+    return response.json();
+  },
+
+  updateApplication: async (applicationId: number, updateData: any): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/applications/${applicationId}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update application');
+    }
+
+    return response.json();
+  },
+
   searchJobs: async (params: JobSearchParams): Promise<JobSearchResponse> => {
     const queryParams = new URLSearchParams({
       query: params.query,

@@ -39,7 +39,7 @@ app.add_middleware(
 )
 
 # Import routers
-from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail, auth
+from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail, auth, applications
 
 # Initialize database tables on startup
 @app.on_event("startup")
@@ -56,6 +56,7 @@ app.include_router(outreach.router, prefix="/outreach", tags=["Outreach"])
 app.include_router(automation.router)
 app.include_router(referrals.router)
 app.include_router(gmail.router)
+app.include_router(applications.router)
 
 @app.get("/health")
 async def health_check():

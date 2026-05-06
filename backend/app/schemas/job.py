@@ -6,6 +6,7 @@ from typing import Optional, List
 from datetime import datetime
 from app.models.job import JobStatus
 from app.schemas.referral import ReferralSchema
+from app.schemas.application import ApplicationResponse
 
 
 class JobCreate(BaseModel):
@@ -50,6 +51,7 @@ class JobResponse(BaseModel):
     created_at: datetime
     updated_at: Optional[datetime]
     network_contacts: List[ReferralSchema] = []
+    applications: List[ApplicationResponse] = []
 
     class Config:
         from_attributes = True

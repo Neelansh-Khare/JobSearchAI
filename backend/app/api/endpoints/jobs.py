@@ -11,8 +11,55 @@ from app.schemas.job import JobCreate, JobUpdate, JobResponse
 from app.schemas.referral import ReferralSchema
 from app.api import deps
 from app.models.user import User
+from app.models.application import Application
+from sqlalchemy import func
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
+
+@router.get("/stats")
+def get_job_stats(
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get job search statistics for the current user.
+    """
+    # 1. Counts by status
+    status_counts = db.query(Job.status, func.count(Job.id)).filter(
+        Job.user_id == current_user.id
+    ).group_by(Job.status).all()
+    
+    stats_dict = {status.value: count for status, count in status_counts}
+    
+    # 2. Velocity: Applications in the last 30 days
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    apps_last_30_days = db.query(func.count(Job.id)).filter(
+        Job.user_id == current_user.id,
+        Job.created_at >= thirty_days_ago,
+        Job.status != JobStatus.NEW
+    ).scalar()
+    
+    # 3. Funnel: Applied -> Interview -> Offer
+    total_applied = stats_dict.get(JobStatus.APPLIED.value, 0) + \
+                    stats_dict.get(JobStatus.INTERVIEW.value, 0) + \
+                    stats_dict.get(JobStatus.OFFER.value, 0) + \
+                    stats_dict.get(JobStatus.REJECTED.value, 0)
+                    
+    total_interviews = stats_dict.get(JobStatus.INTERVIEW.value, 0) + \
+                       stats_dict.get(JobStatus.OFFER.value, 0)
+                       
+    total_offers = stats_dict.get(JobStatus.OFFER.value, 0)
+    
+    return {
+        "status_distribution": stats_dict,
+        "velocity_30d": apps_last_30_days,
+        "funnel": {
+            "applied": total_applied,
+            "interviews": total_interviews,
+            "offers": total_offers
+        }
+    }
 
 
 @router.post("/", response_model=JobResponse, status_code=201)
