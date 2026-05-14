@@ -5,11 +5,15 @@ import { JobSearchAPI } from '@/services/api';
 import GlassCard from '@/components/GlassCard';
 import GlassButton from '@/components/GlassButton';
 import { toast } from 'react-hot-toast';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Form state
   const [fullName, setFullName] = useState('');
@@ -33,7 +37,20 @@ export default function SettingsPage() {
     };
 
     fetchUser();
-  }, []);
+    
+    // Check for success/error messages from OAuth redirect
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+    
+    if (success === 'GmailConnected') {
+      toast.success('Gmail connected successfully!');
+      // Clear URL params
+      router.replace('/settings');
+    } else if (error) {
+      toast.error(`Connection failed: ${error}`);
+      router.replace('/settings');
+    }
+  }, [searchParams, router]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,6 +79,32 @@ export default function SettingsPage() {
       toast.error(error.message || 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConnectGmail = async () => {
+    try {
+      const { url } = await JobSearchAPI.getGmailAuthUrl();
+      window.location.href = url;
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start Gmail connection');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!confirm('CRITICAL: Are you sure you want to delete your account? This will permanently delete all your jobs, resumes, and data. This action CANNOT be undone.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      await JobSearchAPI.deleteCurrentUser();
+      toast.success('Your account has been deleted');
+      JobSearchAPI.logout();
+      router.push('/login');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete account');
+      setIsDeleting(false);
     }
   };
 
@@ -168,7 +211,10 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   {!user?.gmail_token && (
-                    <button className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                    <button 
+                      onClick={handleConnectGmail}
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    >
                       Connect
                     </button>
                   )}
@@ -183,7 +229,10 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   {!user?.linkedin_token && (
-                    <button className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
+                    <button 
+                      onClick={() => toast('LinkedIn OAuth coming soon. Use the Browser Extension to save jobs!')}
+                      className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                    >
                       Connect
                     </button>
                   )}
@@ -198,8 +247,12 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-400 mb-4">
                 Deleting your account is permanent and cannot be undone. All your data will be removed.
               </p>
-              <button className="w-full py-2 px-4 rounded-xl border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/10 transition-all">
-                Delete Account
+              <button 
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="w-full py-2 px-4 rounded-xl border border-red-500/30 text-red-400 text-sm font-medium hover:bg-red-500/10 transition-all disabled:opacity-50"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Account'}
               </button>
             </GlassCard>
           </div>

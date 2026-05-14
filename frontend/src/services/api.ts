@@ -92,6 +92,12 @@ export interface ContactResponsePayload {
   source: string;
 }
 
+export interface GmailSendRequestPayload {
+  recipient_email: string;
+  subject: string;
+  body: string;
+}
+
 // Token management
 const TOKEN_KEY = 'jobsearchai_token';
 
@@ -192,6 +198,18 @@ export const JobSearchAPI = {
     }
 
     return response.json();
+  },
+
+  deleteCurrentUser: async (): Promise<void> => {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to delete account');
+    }
   },
 
   logout: () => {
@@ -553,7 +571,20 @@ export const JobSearchAPI = {
     return response.json();
   },
 
-  sendEmail: async (payload: GmailSendRequestPayload): Promise<{ status: string; message: string }> => {
+  getGmailAuthUrl: async (): Promise<{ url: string }> => {
+    const response = await fetch(`${API_BASE_URL}/gmail/auth`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to get Gmail auth URL');
+    }
+
+    return response.json();
+  },
+
+  sendEmail: async (payload: any): Promise<{ status: string; message: string }> => {
     const response = await fetch(`${API_BASE_URL}/gmail/send`, {
       method: 'POST',
       headers: getHeaders(),
