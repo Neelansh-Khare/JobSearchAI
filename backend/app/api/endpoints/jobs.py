@@ -32,35 +32,43 @@ def get_job_stats(
     
     stats_dict = {status.value: count for status, count in status_counts}
     
-    # 2. Velocity: Applications in the last 30 days
+    # 2. Velocity: Applications in the last 7 and 30 days
     thirty_days_ago = datetime.now() - timedelta(days=30)
+    seven_days_ago = datetime.now() - timedelta(days=7)
+
     apps_last_30_days = db.query(func.count(Job.id)).filter(
         Job.user_id == current_user.id,
         Job.created_at >= thirty_days_ago,
         Job.status != JobStatus.NEW
     ).scalar()
-    
+
+    apps_last_7_days = db.query(func.count(Job.id)).filter(
+        Job.user_id == current_user.id,
+        Job.created_at >= seven_days_ago,
+        Job.status != JobStatus.NEW
+    ).scalar()
+
     # 3. Funnel: Applied -> Interview -> Offer
     total_applied = stats_dict.get(JobStatus.APPLIED.value, 0) + \
                     stats_dict.get(JobStatus.INTERVIEW.value, 0) + \
                     stats_dict.get(JobStatus.OFFER.value, 0) + \
                     stats_dict.get(JobStatus.REJECTED.value, 0)
-                    
+
     total_interviews = stats_dict.get(JobStatus.INTERVIEW.value, 0) + \
                        stats_dict.get(JobStatus.OFFER.value, 0)
-                       
+
     total_offers = stats_dict.get(JobStatus.OFFER.value, 0)
-    
+
     return {
         "status_distribution": stats_dict,
         "velocity_30d": apps_last_30_days,
+        "velocity_7d": apps_last_7_days,
         "funnel": {
             "applied": total_applied,
             "interviews": total_interviews,
             "offers": total_offers
         }
     }
-
 
 @router.post("/", response_model=JobResponse, status_code=201)
 def create_job(

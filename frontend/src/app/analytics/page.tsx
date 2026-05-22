@@ -59,9 +59,14 @@ export default function AnalyticsPage() {
           <GlassCard className="p-8 border-blue-500/20">
             <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-2">Applications</h3>
             <p className="text-5xl font-bold">{stats.funnel.applied}</p>
-            <p className="text-xs text-gray-500 mt-4 flex items-center">
-              <span className="text-green-400 mr-1">↑</span> {stats.velocity_30d} in last 30 days
-            </p>
+            <div className="mt-4 space-y-1">
+              <p className="text-xs text-gray-500 flex items-center">
+                <span className="text-green-400 mr-1">↑</span> {stats.velocity_7d} in last 7 days
+              </p>
+              <p className="text-xs text-gray-500 flex items-center">
+                <span className="text-blue-400 mr-1">→</span> {stats.velocity_30d} in last 30 days
+              </p>
+            </div>
           </GlassCard>
 
           <GlassCard className="p-8 border-purple-500/20">
@@ -149,7 +154,7 @@ export default function AnalyticsPage() {
               <div className="text-2xl mb-4">💡</div>
               <h3 className="text-lg font-bold text-white mb-2">Search Momentum</h3>
               <p className="text-gray-400 leading-relaxed">
-                You applied to <span className="text-white font-bold">{stats.velocity_30d} jobs</span> in the last month. 
+                You applied to <span className="text-white font-bold">{stats.velocity_7d} jobs</span> this week and <span className="text-white font-bold">{stats.velocity_30d} jobs</span> in the last month. 
                 Consistent application volume is key to maintaining search velocity.
               </p>
             </div>

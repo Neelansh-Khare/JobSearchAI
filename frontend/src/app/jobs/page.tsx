@@ -63,7 +63,7 @@ export default function JobsPage() {
   const handleSyncGmail = async () => {
     setIsSyncing(true);
     try {
-      const result = await JobSearchAPI.scanGmail(1, 7);
+      const result = await JobSearchAPI.scanGmail(7);
       if (result.updates_found > 0) {
         toast.success(`Found ${result.updates_found} updates from Gmail!`);
         loadJobs();
@@ -77,6 +77,16 @@ export default function JobsPage() {
       setIsSyncing(false);
     }
   };
+
+  const upcomingInterviews = jobs.filter(job => {
+    const interviewDate = job.applications?.[0]?.interview_date;
+    if (!interviewDate) return false;
+    return new Date(interviewDate) >= new Date();
+  }).sort((a, b) => {
+    const dateA = new Date(a.applications![0].interview_date!);
+    const dateB = new Date(b.applications![0].interview_date!);
+    return dateA.getTime() - dateB.getTime();
+  });
 
   if (isLoading && jobs.length === 0) {
     return (
@@ -112,6 +122,35 @@ export default function JobsPage() {
               </Link>
             </div>
           </div>
+
+          {upcomingInterviews.length > 0 && (
+            <div className="mb-12 animate-fade-in">
+              <h2 className="text-xl font-bold text-purple-400 mb-4 flex items-center gap-2">
+                🗓️ Upcoming Interviews
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {upcomingInterviews.map((job) => (
+                  <GlassCard key={`interview-${job.id}`} className="p-4 border-purple-500/30 bg-purple-500/5">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-white">{job.title}</h3>
+                        <p className="text-sm text-gray-400">{job.company}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-bold text-purple-400">
+                          {new Date(job.applications![0].interview_date!).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </GlassCard>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mb-10 flex items-center gap-4">
             <div className="glassmorphism p-1 flex items-center">
