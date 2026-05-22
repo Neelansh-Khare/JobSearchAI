@@ -78,7 +78,6 @@ export default function OutreachPage() {
         recipient_email: recipientEmail,
         subject: emailSubject,
         body: generatedEmail,
-        user_id: 1, // Hardcoded for now
       });
       setSendSuccess('Email sent successfully via Gmail!');
     } catch (err: unknown) {

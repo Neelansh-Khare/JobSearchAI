@@ -18,6 +18,8 @@ export default function SettingsPage() {
   // Form state
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [linkedin, setLinkedin] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -28,6 +30,11 @@ export default function SettingsPage() {
         setUser(userData);
         setFullName(userData.full_name || '');
         setEmail(userData.email || '');
+        
+        // Load automation profile from preferences
+        const profile = userData.preferences?.profile || {};
+        setPhone(profile.phone || '');
+        setLinkedin(profile.linkedin || '');
       } catch (error) {
         console.error('Failed to fetch user:', error);
         toast.error('Failed to load profile');
@@ -65,6 +72,16 @@ export default function SettingsPage() {
       const updateData: any = {
         full_name: fullName,
         email: email,
+        preferences: {
+          ...user?.preferences,
+          profile: {
+            ...(user?.preferences?.profile || {}),
+            phone: phone,
+            linkedin: linkedin,
+            first_name: fullName.split(' ')[0] || '',
+            last_name: fullName.split(' ').slice(1).join(' ') || '',
+          }
+        }
       };
       
       if (password) {
@@ -154,6 +171,29 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                     placeholder="Enter your email"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">Phone (for Auto-Apply)</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                      placeholder="+1 (555) 000-0000"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300">LinkedIn URL (for Auto-Apply)</label>
+                    <input
+                      type="url"
+                      value={linkedin}
+                      onChange={(e) => setLinkedin(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                      placeholder="https://linkedin.com/in/username"
+                    />
+                  </div>
                 </div>
 
                 <div className="pt-4 border-t border-white/5">

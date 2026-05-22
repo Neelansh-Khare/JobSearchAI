@@ -129,7 +129,7 @@ IMPORTANT: Return ONLY the JSON array, no other text."""
 
         try:
             response = gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash-lite",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json"
@@ -174,13 +174,15 @@ IMPORTANT: Return ONLY the JSON array, no other text."""
         if not user:
             raise ValueError(f"User with ID {user_id} not found.")
 
-        # Construct user profile data from the User model
+        # Construct user profile data from the User model and preferences
         preferences = user.preferences if user.preferences else {}
+        profile = preferences.get('profile', {})
+        
         user_profile_data = {
-            'name': preferences.get('full_name', 'Applicant'),
+            'name': user.full_name or 'Applicant',
             'email': user.email,
-            'linkedin': preferences.get('linkedin_url', ''),
-            'phone': preferences.get('phone_number', ''),
+            'linkedin': profile.get('linkedin', preferences.get('linkedin_url', '')),
+            'phone': profile.get('phone', preferences.get('phone_number', '')),
             'job_preference': preferences.get('job_preference', ''),
             'location_preference': preferences.get('location_preference', ''),
             'job_role': preferences.get('current_role', ''),
@@ -224,7 +226,7 @@ Subject: [subject line]
 """
         try:
             response = gemini_client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-2.0-flash-lite",
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     system_instruction=system_instruction
