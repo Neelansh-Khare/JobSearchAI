@@ -98,3 +98,16 @@ def update_user_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user_me(
+    *,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Delete own user account.
+    """
+    db.delete(current_user)
+    db.commit()
+    return None

@@ -19,6 +19,14 @@ export default function ReferralsPage() {
   const [discoveredJobs, setDiscoveredJobs] = useState<any[]>([]);
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [discoveryQuery, setDiscoveryQuery] = useState('Software Engineer');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newReferral, setNewReferral] = useState({
+    contact_name: '',
+    company: '',
+    contact_email_or_profile: '',
+    relationship: '',
+    notes: ''
+  });
 
   const loadReferrals = useCallback(async () => {
     setIsLoading(true);
@@ -113,6 +121,31 @@ export default function ReferralsPage() {
     }
   };
 
+  const handleAddReferral = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReferral.contact_name || !newReferral.company) {
+      toast.error('Name and Company are required');
+      return;
+    }
+
+    try {
+      await JobSearchAPI.createReferral(newReferral);
+      toast.success('Referral added!');
+      setShowAddModal(false);
+      setNewReferral({
+        contact_name: '',
+        company: '',
+        contact_email_or_profile: '',
+        relationship: '',
+        notes: ''
+      });
+      loadReferrals();
+    } catch (err) {
+      toast.error('Failed to add referral');
+      console.error(err);
+    }
+  };
+
   return (
     <div className="min-h-screen p-4 md:p-8">
       <main className="max-w-7xl mx-auto space-y-8">
@@ -157,12 +190,97 @@ export default function ReferralsPage() {
                     {isUploading ? 'Importing...' : 'Import LinkedIn CSV'}
                   </GlassButton>
                 </div>
-                <GlassButton onClick={() => toast.success('Feature coming soon: Add Manual Referral')}>
+                <GlassButton onClick={() => setShowAddModal(true)}>
                   + Add Referral
                 </GlassButton>
               </div>
             </div>
           </GlassCard>
+
+          {/* Add Manual Referral Modal */}
+          {showAddModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+              <GlassCard className="w-full max-w-lg p-8 relative border-white/20">
+                <button 
+                  onClick={() => setShowAddModal(false)}
+                  className="absolute top-4 right-4 text-white/40 hover:text-white"
+                >
+                  ✕
+                </button>
+                <h2 className="text-2xl font-bold text-white mb-6">Add Referral Contact</h2>
+                <form onSubmit={handleAddReferral} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Contact Name *</label>
+                    <input
+                      type="text"
+                      value={newReferral.contact_name}
+                      onChange={(e) => setNewReferral({...newReferral, contact_name: e.target.value})}
+                      className="w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-white/30 text-white"
+                      placeholder="e.g. John Doe"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Company *</label>
+                    <input
+                      type="text"
+                      value={newReferral.company}
+                      onChange={(e) => setNewReferral({...newReferral, company: e.target.value})}
+                      className="w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-white/30 text-white"
+                      placeholder="e.g. Google"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Email or LinkedIn URL</label>
+                    <input
+                      type="text"
+                      value={newReferral.contact_email_or_profile}
+                      onChange={(e) => setNewReferral({...newReferral, contact_email_or_profile: e.target.value})}
+                      className="w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-white/30 text-white"
+                      placeholder="e.g. john@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Relationship</label>
+                    <input
+                      type="text"
+                      value={newReferral.relationship}
+                      onChange={(e) => setNewReferral({...newReferral, relationship: e.target.value})}
+                      className="w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-white/30 text-white"
+                      placeholder="e.g. Former Colleague"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-white/70 mb-1">Notes</label>
+                    <textarea
+                      value={newReferral.notes}
+                      onChange={(e) => setNewReferral({...newReferral, notes: e.target.value})}
+                      className="w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-white/30 text-white h-24"
+                      placeholder="Any additional context..."
+                    />
+                  </div>
+                  <div className="pt-4 flex gap-3">
+                    <GlassButton 
+                      type="button" 
+                      onClick={() => setShowAddModal(false)}
+                      variant="secondary"
+                      className="flex-1"
+                    >
+                      Cancel
+                    </GlassButton>
+                    <GlassButton 
+                      type="submit"
+                      variant="primary"
+                      className="flex-1"
+                    >
+                      Save Referral
+                    </GlassButton>
+                  </div>
+                </form>
+              </GlassCard>
+            </div>
+          )}
 
           {error && (
             <GlassCard className="p-6 bg-red-500/10 mb-6">

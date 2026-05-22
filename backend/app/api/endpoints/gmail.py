@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from typing import List, Dict, Any
+import os
+import json
+from google_auth_oauthlib.flow import Flow
 from app.db.database import get_db
 from app.services.gmail_service import GmailService
 from app.schemas.gmail import GmailSendRequest
@@ -8,6 +12,117 @@ from app.api import deps
 from app.models.user import User
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
+
+# Google OAuth Scopes
+SCOPES = [
+    'https://www.googleapis.com/auth/gmail.readonly',
+    'https://www.googleapis.com/auth/gmail.send',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'openid'
+]
+
+@router.get("/auth")
+async def gmail_auth(
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Start the Google OAuth flow to connect Gmail.
+    """
+    client_id = os.getenv("GMAIL_CLIENT_ID")
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET")
+    
+    if not client_id or not client_secret:
+        raise HTTPException(
+            status_code=500, 
+            detail="Gmail API credentials not configured in environment"
+        )
+
+    # In a real app, you'd want to store this state in a session or database
+    # For simplicity, we'll use a fixed redirect URI
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [os.getenv("GMAIL_REDIRECT_URI", "http://localhost:8000/gmail/callback")]
+        }
+    }
+    
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES
+    )
+    
+    # The state is used to prevent CSRF, but for now we'll just encode the user_id in it
+    # Note: In production, use a secure, encrypted state.
+    flow.redirect_uri = client_config["web"]["redirect_uris"][0]
+    
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent',
+        state=str(current_user.id)
+    )
+    
+    return {"url": authorization_url}
+
+@router.get("/callback")
+async def gmail_callback(
+    request: Request,
+    code: str = Query(...),
+    state: str = Query(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Callback for Google OAuth flow.
+    """
+    user_id = int(state)
+    user = db.query(User).filter(User.id == user_id).first()
+    
+    if not user:
+        return RedirectResponse(url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?error=UserNotFound")
+
+    client_id = os.getenv("GMAIL_CLIENT_ID")
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET")
+    
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token"
+        }
+    }
+    
+    flow = Flow.from_client_config(
+        client_config,
+        scopes=SCOPES
+    )
+    flow.redirect_uri = os.getenv("GMAIL_REDIRECT_URI", "http://localhost:8000/gmail/callback")
+    
+    try:
+        flow.fetch_token(code=code)
+        credentials = flow.credentials
+        
+        # Save token to user
+        token_data = {
+            'token': credentials.token,
+            'refresh_token': credentials.refresh_token,
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': credentials.scopes
+        }
+        
+        user.gmail_token = token_data
+        db.commit()
+        
+        # Redirect back to frontend
+        return RedirectResponse(url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?success=GmailConnected")
+    except Exception as e:
+        return RedirectResponse(url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?error={str(e)}")
 
 @router.post("/scan")
 def scan_gmail(
