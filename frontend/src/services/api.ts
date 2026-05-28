@@ -598,6 +598,20 @@ export const JobSearchAPI = {
 
     return response.json();
   },
+
+  getInterviewPrep: async (applicationId: number): Promise<any> => {
+    const response = await fetch(`${API_BASE_URL}/applications/${applicationId}/interview-prep`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to generate interview prep');
+    }
+
+    return response.json();
+  },
 };
 
 

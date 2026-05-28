@@ -5,6 +5,8 @@ from app.models.application import Application
 from app.schemas.application import ApplicationUpdate, ApplicationResponse
 from app.api import deps
 from app.models.user import User
+from app.services.interview_prep_service import InterviewPrepService
+from typing import Any, Dict
 
 router = APIRouter(prefix="/applications", tags=["applications"])
 
@@ -33,3 +35,34 @@ def update_application(
     db.commit()
     db.refresh(db_application)
     return db_application
+
+@router.post("/{application_id}/interview-prep", response_model=Dict[str, Any])
+def generate_interview_prep(
+    application_id: int,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Generate tailored interview preparation material for an application.
+    """
+    db_application = db.query(Application).filter(
+        Application.id == application_id,
+        Application.user_id == current_user.id
+    ).first()
+    
+    if not db_application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    interview_service = InterviewPrepService(db)
+    try:
+        prep_data = interview_service.generate_prep(application_id, current_user.id)
+        
+        # Save to database
+        db_application.generated_interview_prep = prep_data
+        db.commit()
+        
+        return prep_data
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -24,6 +24,8 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
   const [interviewNotes, setInterviewNotes] = useState(application?.interview_notes || '');
   const [interviewerNames, setInterviewerNames] = useState(application?.interviewer_names || '');
   const [isSavingInterview, setIsSavingInterview] = useState(false);
+  const [isGeneratingPrep, setIsGeneratingPrep] = useState(false);
+  const [prepData, setPrepData] = useState<any>(application?.generated_interview_prep || null);
 
   const {
     attributes,
@@ -90,6 +92,25 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
       console.error('Failed to save interview info:', err);
       alert('Failed to save interview info');
       setIsSavingInterview(false);
+    }
+  };
+
+  const handleGeneratePrep = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!application) {
+      alert('No application found for this job. You must apply or customize a resume first.');
+      return;
+    }
+
+    setIsGeneratingPrep(true);
+    try {
+      const data = await JobSearchAPI.getInterviewPrep(application.id);
+      setPrepData(data);
+    } catch (err) {
+      console.error('Failed to generate prep:', err);
+      alert('Failed to generate interview prep: ' + (err as Error).message);
+    } finally {
+      setIsGeneratingPrep(false);
     }
   };
 
@@ -170,7 +191,7 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
           </button>
           
           {showInterview && (
-            <div className="mt-2 space-y-2 p-3 bg-white/5 rounded-lg border border-white/10" onClick={(e) => e.stopPropagation()}>
+            <div className="mt-2 space-y-3 p-3 bg-white/5 rounded-lg border border-white/10" onClick={(e) => e.stopPropagation()}>
               <div className="space-y-1">
                 <label className="text-[9px] uppercase text-gray-500 font-bold">Interview Date</label>
                 <input
@@ -202,13 +223,76 @@ export default function JobCard({ job, onDelete }: JobCardProps) {
                   placeholder="Questions to ask, points to mention..."
                 />
               </div>
-              <button
-                onClick={handleSaveInterview}
-                disabled={isSavingInterview}
-                className="w-full text-[10px] bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 py-1.5 rounded transition-all"
-              >
-                {isSavingInterview ? 'Saving...' : 'Save Interview Info'}
-              </button>
+              <div className="flex gap-2">
+                <button
+                    onClick={handleSaveInterview}
+                    disabled={isSavingInterview}
+                    className="flex-1 text-[10px] bg-white/10 hover:bg-white/20 text-white py-1.5 rounded transition-all"
+                >
+                    {isSavingInterview ? 'Saving...' : 'Save Manual Info'}
+                </button>
+                <button
+                    onClick={handleGeneratePrep}
+                    disabled={isGeneratingPrep}
+                    className="flex-1 text-[10px] bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 py-1.5 rounded transition-all flex items-center justify-center gap-1"
+                >
+                    {isGeneratingPrep ? '✨ Generating...' : '✨ AI Interview Prep'}
+                </button>
+              </div>
+
+              {/* AI Prep Results */}
+              {prepData && (
+                <div className="mt-3 pt-3 border-t border-white/10 space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-purple-400 uppercase">Behavioral Questions</h4>
+                        {prepData.behavioral_questions.map((q: any, i: number) => (
+                            <div key={i} className="p-2 bg-black/20 rounded border border-white/5 space-y-1">
+                                <p className="text-[11px] font-bold text-white">Q: {q.question}</p>
+                                <p className="text-[9px] text-gray-400"><span className="text-purple-300/60">Why:</span> {q.why_ask}</p>
+                                <p className="text-[9px] text-gray-400"><span className="text-purple-300/60">Points:</span> {q.talking_points}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-blue-400 uppercase">Technical Questions</h4>
+                        {prepData.technical_questions.map((q: any, i: number) => (
+                            <div key={i} className="p-2 bg-black/20 rounded border border-white/5 space-y-1">
+                                <p className="text-[11px] font-bold text-white">Q: {q.question}</p>
+                                <p className="text-[9px] text-gray-400"><span className="text-blue-300/60">Topics:</span> {q.expected_topics}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-green-400 uppercase">Company Research</h4>
+                        <ul className="list-disc list-inside space-y-1">
+                            {prepData.company_research.map((r: string, i: number) => (
+                                <li key={i} className="text-[10px] text-gray-400">{r}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-[10px] font-bold text-orange-400 uppercase">Questions to Ask</h4>
+                        <ul className="list-disc list-inside space-y-1">
+                            {prepData.questions_to_ask.map((q: string, i: number) => (
+                                <li key={i} className="text-[10px] text-gray-400">{q}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    <button 
+                        onClick={() => {
+                            const blob = new Blob([JSON.stringify(prepData, null, 2)], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `interview-prep-${job.company}.json`;
+                            a.click();
+                        }}
+                        className="w-full text-[9px] text-gray-500 hover:text-gray-400 text-center"
+                    >
+                        Download Prep Guide (JSON)
+                    </button>
+                </div>
+              )}
             </div>
           )}
         </div>

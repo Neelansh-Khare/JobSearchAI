@@ -1,7 +1,7 @@
 """
 Application model - represents a job application (links a job to a resume).
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, JSON
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.db.base import Base
@@ -26,6 +26,7 @@ class Application(Base):
     interview_date = Column(DateTime(timezone=True), nullable=True)
     interview_notes = Column(Text, nullable=True)
     interviewer_names = Column(String, nullable=True)
+    generated_interview_prep = Column(JSON, nullable=True)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
