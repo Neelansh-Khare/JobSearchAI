@@ -17,6 +17,7 @@ class UserCreate(UserBase):
 # Properties to receive via API on update
 class UserUpdate(UserBase):
     password: Optional[str] = None
+    preferences: Optional[Dict[str, Any]] = None
 
 class UserInDBBase(UserBase):
     id: Optional[int] = None

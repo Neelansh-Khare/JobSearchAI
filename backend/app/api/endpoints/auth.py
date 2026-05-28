@@ -93,6 +93,8 @@ def update_user_me(
                 detail="Email already registered with another account.",
             )
         current_user.email = user_in.email
+    if user_in.preferences is not None:
+        current_user.preferences = user_in.preferences
     
     db.add(current_user)
     db.commit()
