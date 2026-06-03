@@ -309,6 +309,19 @@ export const JobSearchAPI = {
     return response.json();
   },
 
+  getJobMatchScore: async (jobId: number): Promise<{ match_score: number; matched_skills: string[]; missing_skills: string[] }> => {
+    const response = await fetch(`${API_BASE_URL}/jobs/${jobId}/match`, {
+      headers: getHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to fetch match score');
+    }
+
+    return response.json();
+  },
+
   updateJob: async (jobId: number, jobUpdate: JobUpdate): Promise<Job> => {
     const response = await fetch(`${API_BASE_URL}/jobs/${jobId}`, {
       method: 'PATCH',

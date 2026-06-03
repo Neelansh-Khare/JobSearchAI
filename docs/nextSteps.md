@@ -129,14 +129,13 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ User accounts and JWT auth.
    - ✅ Multi-tenant data isolation.
    - ✅ Protected frontend routes.
-### Phase 6: Integration & Polish ✅ COMPLETE
+6. **Milestone 6 – Integration & Polish** ✅ **COMPLETE**
    - ✅ Gmail Integration (Full OAuth flow).
    - ✅ LinkedIn Browser Extension (Job saving).
    - ✅ Production UI/UX Polish.
    - ✅ Deployment Configuration (Docker).
    - ✅ Network & Referral Discovery system.
-   - ✅ **Search Analytics Dashboard** (Application tracking).
-
+   - ✅ Search Analytics Dashboard (Application tracking).
 
 ### Phase 6: "Professional Suite" (Interviews & Analytics) ✅ COMPLETE
 *Goal: Move from applying to winning by managing the interview lifecycle and tracking performance.*
@@ -158,4 +157,20 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ Interview Tracking (Scheduling and notes).
    - ✅ AI Interview Prep (Tailored questions).
    - ✅ Performance Insights (Funnel analysis).
+
+### Phase 7: "The Command Center" (Intelligent Dashboard) [IN PROGRESS]
+*Goal: Centralize the job search experience with actionable insights and a unified view.*
+
+1.  **Unified Dashboard**:
+    *   Consolidate stats, upcoming interviews, and recent activity into one view.
+    *   AI-powered "Next Best Action" recommendations.
+2.  **Job Matching Score**:
+    *   Calculate a match percentage between the user's base resume and saved jobs.
+3.  **Application Follow-ups**:
+    *   Automated reminders to follow up on applications after X days.
+
+8. **Milestone 8 – Intelligent Dashboard** [IN PROGRESS]
+   - [x] Unified User Dashboard (Landing page for logged-in users).
+   - [x] AI Job Match Scoring (MVP).
+   - [ ] Actionable search insights.
 

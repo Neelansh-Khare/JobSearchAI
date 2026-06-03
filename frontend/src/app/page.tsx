@@ -4,18 +4,22 @@ import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import JobApplicationForm from "@/components/JobApplicationForm";
 import ResultDisplay from "@/components/ResultDisplay";
-import { JobSearchAPI, getApiBaseUrl } from "@/services/api";
+import { JobSearchAPI, getApiBaseUrl, getToken } from "@/services/api";
 import GlassCard from '@/components/GlassCard';
 import { CustomizeResumeResponse } from '@/types';
+import Dashboard from '@/components/Dashboard';
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CustomizeResumeResponse | null>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showCustomizer, setShowCustomizer] = useState(false);
 
   // Handle client-side only rendering to avoid hydration errors
   useEffect(() => {
     setIsMounted(true);
+    setIsLoggedIn(!!getToken());
   }, []);
 
   const handleSubmit = async (jobDescription: string, resumeFile: File, jobId?: number) => {
@@ -50,28 +54,64 @@ export default function Home() {
     return null;
   }
 
+  // If logged in and NOT showing customizer, show dashboard
+  if (isLoggedIn && !showCustomizer && !result) {
+    return (
+      <div className="min-h-screen p-4 md:p-8 animate-fade-in">
+        <main className="max-w-7xl mx-auto space-y-20 pb-20">
+          <Dashboard />
+          <div className="text-center">
+            <button 
+              onClick={() => setShowCustomizer(true)}
+              className="text-gray-500 hover:text-white transition-colors text-sm"
+            >
+              Need to customize a resume? Click here.
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4 md:p-8 animate-fade-in">
       <main className="max-w-7xl mx-auto space-y-20 pb-20">
-        <section className="mt-16 text-center">
-          <div className="inline-block px-4 py-1.5 mb-6 glassmorphism text-indigo-300 text-sm font-semibold tracking-wide uppercase">
-            Powered by Advanced AI
-          </div>
+        {isLoggedIn && showCustomizer && (
+            <div className="mt-8">
+                <button 
+                    onClick={() => setShowCustomizer(false)}
+                    className="text-indigo-400 hover:text-indigo-300 transition-colors text-sm flex items-center gap-2"
+                >
+                    ← Back to Dashboard
+                </button>
+            </div>
+        )}
+        
+        <section className={`${isLoggedIn ? 'mt-8' : 'mt-16'} text-center`}>
+          {!isLoggedIn && (
+            <div className="inline-block px-4 py-1.5 mb-6 glassmorphism text-indigo-300 text-sm font-semibold tracking-wide uppercase">
+                Powered by Advanced AI
+            </div>
+          )}
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400 leading-tight">
             AI-Powered Resume <br className="hidden md:block" /> Customization
           </h1>
-          <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Optimize your resume for specific job descriptions instantly. 
-            Highlight your strengths and bridge the gap to your next dream role.
-          </p>
-          <div className="flex justify-center gap-4">
-            <a href="/jobs" className="glassmorphism px-8 py-3 bg-indigo-600/20 hover:bg-indigo-600/30 text-white font-bold transition-all">
-              Manage Applications
-            </a>
-            <a href="#about" className="glassmorphism px-8 py-3 hover:bg-white/10 text-white font-bold transition-all">
-              How it works
-            </a>
-          </div>
+          {!isLoggedIn && (
+            <>
+                <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+                    Optimize your resume for specific job descriptions instantly. 
+                    Highlight your strengths and bridge the gap to your next dream role.
+                </p>
+                <div className="flex justify-center gap-4">
+                    <a href="/register" className="glassmorphism px-8 py-3 bg-indigo-600/20 hover:bg-indigo-600/30 text-white font-bold transition-all">
+                        Get Started
+                    </a>
+                    <a href="#about" className="glassmorphism px-8 py-3 hover:bg-white/10 text-white font-bold transition-all">
+                        How it works
+                    </a>
+                </div>
+            </>
+          )}
         </section>
 
         {!result ? (

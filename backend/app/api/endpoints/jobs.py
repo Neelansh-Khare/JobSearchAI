@@ -70,6 +70,46 @@ def get_job_stats(
         }
     }
 
+@router.get("/{job_id}/match")
+def get_job_match_score(
+    job_id: int,
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Calculate a match score between a job and the user's latest resume.
+    """
+    job = db.query(Job).filter(Job.id == job_id, Job.user_id == current_user.id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Get latest resume
+    from app.models.resume import Resume
+    resume = db.query(Resume).filter(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()).first()
+    
+    if not resume:
+        return {"match_score": 0, "message": "No resume found to match against"}
+    
+    # Simple keyword-based matching for now (MVP)
+    # In a real scenario, this would use LLM or vector search
+    job_text = (job.title + " " + job.description).lower()
+    resume_text = resume.raw_text.lower()
+    
+    # Basic skill extraction (mock list)
+    skills = ["python", "react", "fastapi", "next.js", "typescript", "aws", "docker", "sql", "machine learning", "ai"]
+    matched_skills = [skill for skill in skills if skill in job_text and skill in resume_text]
+    
+    # Calculate score
+    # This is a very basic heuristic: base 50% + 5% per matched skill up to 100%
+    score = 50 + (len(matched_skills) * 5)
+    score = min(score, 100)
+    
+    return {
+        "match_score": score,
+        "matched_skills": matched_skills,
+        "missing_skills": [skill for skill in skills if skill in job_text and skill not in resume_text]
+    }
+
 @router.post("/", response_model=JobResponse, status_code=201)
 def create_job(
     job: JobCreate,
