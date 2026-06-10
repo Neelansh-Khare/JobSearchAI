@@ -30,10 +30,8 @@ def generate_outreach_email(
             additional_context=request.additional_context
         )
         return {"email_content": generated_email_content}
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate email: {e}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate email: {str(e)}")
 
 
 @router.post("/contacts/find", response_model=List[ContactResponse], status_code=status.HTTP_200_OK)
