@@ -6,9 +6,24 @@ from app.schemas.application import ApplicationUpdate, ApplicationResponse
 from app.api import deps
 from app.models.user import User
 from app.services.interview_prep_service import InterviewPrepService
-from typing import Any, Dict
+from typing import Any, Dict, List
+from datetime import datetime as dt
 
 router = APIRouter(prefix="/applications", tags=["applications"])
+
+@router.get("/follow-ups", response_model=List[ApplicationResponse])
+def get_pending_follow_ups(
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Return applications where follow_up_date has passed and status is pending."""
+    now = dt.utcnow()
+    pending = db.query(Application).filter(
+        Application.user_id == current_user.id,
+        Application.follow_up_date <= now,
+        Application.follow_up_status == "pending"
+    ).all()
+    return pending
 
 @router.patch("/{application_id}", response_model=ApplicationResponse)
 def update_application(

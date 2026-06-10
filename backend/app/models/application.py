@@ -27,7 +27,11 @@ class Application(Base):
     interview_notes = Column(Text, nullable=True)
     interviewer_names = Column(String, nullable=True)
     generated_interview_prep = Column(JSON, nullable=True)
-    
+
+    # Follow-up Reminder Fields
+    follow_up_date = Column(DateTime(timezone=True), nullable=True)
+    follow_up_status = Column(String, nullable=True, default="pending")  # pending, sent, dismissed
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

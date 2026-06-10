@@ -21,6 +21,8 @@ class ApplicationUpdate(BaseModel):
     interview_notes: Optional[str] = None
     interviewer_names: Optional[str] = None
     generated_interview_prep: Optional[dict] = None
+    follow_up_date: Optional[datetime] = None
+    follow_up_status: Optional[str] = None
 
 
 class ApplicationResponse(BaseModel):
@@ -39,6 +41,8 @@ class ApplicationResponse(BaseModel):
     interview_notes: Optional[str]
     interviewer_names: Optional[str]
     generated_interview_prep: Optional[dict]
+    follow_up_date: Optional[datetime]
+    follow_up_status: Optional[str]
     created_at: datetime
     updated_at: Optional[datetime]
 

@@ -7,6 +7,10 @@ from dotenv import load_dotenv
 
 # Import database initialization
 from app.db.database import init_db
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime as _dt
+from app.db.database import SessionLocal
+from app.models.application import Application as _Application
 
 # Configure logging
 logging.basicConfig(
@@ -41,11 +45,39 @@ app.add_middleware(
 # Import routers
 from app.api.endpoints import jobs, resumes, search, outreach, automation, referrals, gmail, auth, applications
 
+scheduler = AsyncIOScheduler()
+
+async def _check_follow_up_reminders():
+    """Hourly background task: logs overdue follow-ups. Extend with email notifications as needed."""
+    db = SessionLocal()
+    try:
+        now = _dt.utcnow()
+        overdue = db.query(_Application).filter(
+            _Application.follow_up_date <= now,
+            _Application.follow_up_status == "pending"
+        ).all()
+        if overdue:
+            logger.info(
+                f"[FollowUp] {len(overdue)} overdue follow-up(s) for user(s): "
+                f"{list({a.user_id for a in overdue})}"
+            )
+    except Exception as e:
+        logger.error(f"[FollowUp] Scheduler error: {e}")
+    finally:
+        db.close()
+
 # Initialize database tables on startup
 @app.on_event("startup")
 async def startup_event():
     init_db()
-    logger.info("Database initialized")
+    scheduler.add_job(_check_follow_up_reminders, 'interval', hours=1, id='follow_up_check')
+    scheduler.start()
+    logger.info("Database initialized and scheduler started")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    scheduler.shutdown()
+    logger.info("Scheduler stopped")
 
 # Include routers
 app.include_router(auth.router, prefix="/auth", tags=["Auth"])
