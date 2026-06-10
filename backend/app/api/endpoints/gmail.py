@@ -91,7 +91,11 @@ async def gmail_callback(
     Callback for Google OAuth flow.
     """
     # Verify HMAC-signed state to prevent CSRF
-    client_secret = os.getenv("GMAIL_CLIENT_SECRET", "")
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET") or ""
+    if not client_secret:
+        return RedirectResponse(
+            url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?error=ConfigurationError"
+        )
     try:
         parts = state.split(":")
         if len(parts) != 3:

@@ -62,43 +62,46 @@ async def upload_referrals_csv(
     try:
         decoded = content.decode('utf-8')
         reader = csv.DictReader(io.StringIO(decoded))
-    except (UnicodeDecodeError, Exception) as e:
-        raise HTTPException(status_code=400, detail=f"Invalid CSV: {str(e)}")
-    
-    referrals_added = 0
-    for row in reader:
-        # Map LinkedIn CSV headers to our Referral model
-        first_name = row.get('First Name', '')
-        last_name = row.get('Last Name', '')
-        contact_name = f"{first_name} {last_name}".strip()
-        
-        company = row.get('Company', '')
-        position = row.get('Position', '')
-        email = row.get('Email Address', '')
-        
-        if not contact_name or not company:
-            continue
-            
-        # Check if already exists for this user
-        existing = db.query(Referral).filter(
-            Referral.user_id == current_user.id,
-            Referral.contact_name == contact_name,
-            Referral.company == company
-        ).first()
-        
-        if not existing:
-            db_referral = Referral(
-                user_id=current_user.id,
-                contact_name=contact_name,
-                company=company,
-                contact_email_or_profile=email,
-                relationship=f"LinkedIn Connection - {position}",
-                status="Identified"
-            )
-            db.add(db_referral)
-            referrals_added += 1
-            
-    db.commit()
+        referrals_added = 0
+        for row in reader:
+            # Map LinkedIn CSV headers to our Referral model
+            first_name = row.get('First Name', '')
+            last_name = row.get('Last Name', '')
+            contact_name = f"{first_name} {last_name}".strip()
+
+            company = row.get('Company', '')
+            position = row.get('Position', '')
+            email = row.get('Email Address', '')
+
+            if not contact_name or not company:
+                continue
+
+            # Check if already exists for this user
+            existing = db.query(Referral).filter(
+                Referral.user_id == current_user.id,
+                Referral.contact_name == contact_name,
+                Referral.company == company
+            ).first()
+
+            if not existing:
+                db_referral = Referral(
+                    user_id=current_user.id,
+                    contact_name=contact_name,
+                    company=company,
+                    contact_email_or_profile=email,
+                    relationship=f"LinkedIn Connection - {position}",
+                    status="Identified"
+                )
+                db.add(db_referral)
+                referrals_added += 1
+
+        db.commit()
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Failed to process CSV: {str(e)}")
+
     return {"message": f"Successfully imported {referrals_added} referrals", "count": referrals_added}
 
 @router.post("/{referral_id}/generate-message")
