@@ -100,13 +100,18 @@ def get_job_match_score(
     if not resume:
         return {"match_score": 0, "message": "No resume found to match against"}
 
-    job_text = f"{job.title} {job.description}".strip()
+    job_text = f"{job.title or ''} {job.description or ''}".strip()
     resume_text = (resume.raw_text or "").strip()
+
+    if not job_text:
+        return {"match_score": 0, "message": "Job has no text content"}
 
     if not resume_text:
         return {"match_score": 0, "message": "Resume has no text content"}
 
     try:
+        if not _gemini_key:
+            raise RuntimeError("GEMINI_API_KEY not configured — semantic scoring unavailable")
         # Embed both texts using Gemini
         job_emb_result = genai.embed_content(
             model="models/text-embedding-004",
@@ -143,7 +148,7 @@ def get_job_match_score(
         job_lower = job_text.lower()
         resume_lower = resume_text.lower()
         matched = [s for s in skills if s in job_lower and s in resume_lower]
-        score = min(50 + len(matched) * 5, 100)
+        score = min(len(matched) * 10, 100)
         return {
             "match_score": score,
             "method": "keyword_fallback",
