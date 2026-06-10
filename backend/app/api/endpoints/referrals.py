@@ -10,6 +10,7 @@ from app.schemas.referral import ReferralSchema, ReferralCreate, ReferralUpdate
 from app.api import deps
 from app.models.user import User
 from app.services.email_generator import EmailGeneratorService
+from app.api.endpoints.search import search_jobs_jsearch
 
 router = APIRouter(prefix="/referrals", tags=["referrals"])
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ async def get_referrals(
     """Retrieve all referral contacts for current user."""
     query = db.query(Referral).filter(Referral.user_id == current_user.id)
     if company:
-        query = query.filter(Referral.company.ilike(f"%{company}%"))
+        query = query.filter(Referral.company.icontains(company, autoescape=True))
     if status:
         query = query.filter(Referral.status == status)
     
@@ -58,8 +59,11 @@ async def upload_referrals_csv(
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
     
     content = await file.read()
-    decoded = content.decode('utf-8')
-    reader = csv.DictReader(io.StringIO(decoded))
+    try:
+        decoded = content.decode('utf-8')
+        reader = csv.DictReader(io.StringIO(decoded))
+    except (UnicodeDecodeError, Exception) as e:
+        raise HTTPException(status_code=400, detail=f"Invalid CSV: {str(e)}")
     
     referrals_added = 0
     for row in reader:
@@ -130,8 +134,6 @@ async def generate_referral_message(
         return {"message": message}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to generate message: {str(e)}")
-
-from app.api.endpoints.search import search_jobs_jsearch
 
 @router.get("/jobs/discover")
 async def discover_network_jobs(

@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 from typing import List, Dict, Any
 import os
 import json
+import hmac
+import hashlib
+import secrets as _secrets
 from google_auth_oauthlib.flow import Flow
 from app.db.database import get_db
 from app.services.gmail_service import GmailService
@@ -59,11 +62,20 @@ async def gmail_auth(
     # Note: In production, use a secure, encrypted state.
     flow.redirect_uri = client_config["web"]["redirect_uris"][0]
     
+    nonce = _secrets.token_urlsafe(16)
+    raw = f"{current_user.id}:{nonce}"
+    signature = hmac.new(
+        client_secret.encode(),
+        raw.encode(),
+        hashlib.sha256
+    ).hexdigest()[:16]
+    signed_state = f"{raw}:{signature}"
+
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true',
         prompt='consent',
-        state=str(current_user.id)
+        state=signed_state
     )
     
     return {"url": authorization_url}
@@ -78,7 +90,30 @@ async def gmail_callback(
     """
     Callback for Google OAuth flow.
     """
-    user_id = int(state)
+    # Verify HMAC-signed state to prevent CSRF
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET", "")
+    try:
+        parts = state.split(":")
+        if len(parts) != 3:
+            raise ValueError("Invalid state format")
+        user_id = int(parts[0])
+        nonce = parts[1]
+        received_sig = parts[2]
+
+        expected_sig = hmac.new(
+            client_secret.encode(),
+            f"{user_id}:{nonce}".encode(),
+            hashlib.sha256
+        ).hexdigest()[:16]
+
+        if not hmac.compare_digest(received_sig, expected_sig):
+            return RedirectResponse(
+                url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?error=InvalidState"
+            )
+    except (ValueError, AttributeError):
+        return RedirectResponse(
+            url=f"{os.getenv('FRONTEND_URL', 'http://localhost:3000')}/settings?error=InvalidState"
+        )
     user = db.query(User).filter(User.id == user_id).first()
     
     if not user:

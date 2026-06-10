@@ -156,7 +156,7 @@ def list_jobs(
         query = query.filter(Job.status == status)
     
     if company:
-        query = query.filter(Job.company.ilike(f"%{company}%"))
+        query = query.filter(Job.company.icontains(company, autoescape=True))
     
     jobs = query.order_by(Job.created_at.desc()).offset(skip).limit(limit).all()
     
