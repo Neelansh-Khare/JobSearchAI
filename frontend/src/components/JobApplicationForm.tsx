@@ -77,7 +77,6 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({ onSubmit, isLoa
       toast.dismiss(tailoringToast);
       toast.success('Resume customized successfully!');
     } catch (error) {
-      console.error('Error submitting form:', error);
       toast.error('Failed to process application. Please try again.');
       setSavingJob(false);
     }

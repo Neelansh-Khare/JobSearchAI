@@ -30,14 +30,12 @@ export default function Home() {
       if (jobId) {
         // If job was saved, use tailorResume to link it in the database
         data = await JobSearchAPI.tailorResume(jobId, resumeFile);
-        console.log(`Job saved with ID: ${jobId}. Resume customized and linked to this job.`);
       } else {
         // Otherwise use generic customizeResume
         data = await JobSearchAPI.customizeResume(jobDescription, resumeFile);
       }
       setResult(data);
     } catch (err) {
-      console.error('Error:', err);
       toast.error(err instanceof Error ? err.message : 'An unexpected error occurred during customization');
       setResult(null);
     } finally {
