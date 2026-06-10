@@ -87,38 +87,69 @@ def get_job_match_score(
     db: Session = Depends(get_db)
 ):
     """
-    Calculate a match score between a job and the user's latest resume.
+    Calculate a semantic match score between a job and the user's latest resume
+    using Gemini text embeddings and cosine similarity.
     """
     job = db.query(Job).filter(Job.id == job_id, Job.user_id == current_user.id).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
-    
-    # Get latest resume
+
     from app.models.resume import Resume
     resume = db.query(Resume).filter(Resume.user_id == current_user.id).order_by(Resume.created_at.desc()).first()
-    
+
     if not resume:
         return {"match_score": 0, "message": "No resume found to match against"}
-    
-    # Simple keyword-based matching for now (MVP)
-    # In a real scenario, this would use LLM or vector search
-    job_text = (job.title + " " + job.description).lower()
-    resume_text = resume.raw_text.lower()
-    
-    # Basic skill extraction (mock list)
-    skills = ["python", "react", "fastapi", "next.js", "typescript", "aws", "docker", "sql", "machine learning", "ai"]
-    matched_skills = [skill for skill in skills if skill in job_text and skill in resume_text]
-    
-    # Calculate score
-    # This is a very basic heuristic: base 50% + 5% per matched skill up to 100%
-    score = 50 + (len(matched_skills) * 5)
-    score = min(score, 100)
-    
-    return {
-        "match_score": score,
-        "matched_skills": matched_skills,
-        "missing_skills": [skill for skill in skills if skill in job_text and skill not in resume_text]
-    }
+
+    job_text = f"{job.title} {job.description}".strip()
+    resume_text = (resume.raw_text or "").strip()
+
+    if not resume_text:
+        return {"match_score": 0, "message": "Resume has no text content"}
+
+    try:
+        # Embed both texts using Gemini
+        job_emb_result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=job_text[:8000],
+        )
+        resume_emb_result = genai.embed_content(
+            model="models/text-embedding-004",
+            content=resume_text[:8000],
+        )
+
+        job_vec = job_emb_result["embedding"]
+        resume_vec = resume_emb_result["embedding"]
+
+        # Cosine similarity (no external deps)
+        dot = sum(a * b for a, b in zip(job_vec, resume_vec))
+        mag_j = sum(x * x for x in job_vec) ** 0.5
+        mag_r = sum(x * x for x in resume_vec) ** 0.5
+        cosine = dot / (mag_j * mag_r) if (mag_j and mag_r) else 0.0
+
+        # Map [0, 1] → [0, 100] (embeddings for same-language text stay positive)
+        score = int(max(0.0, min(1.0, cosine)) * 100)
+
+        return {
+            "match_score": score,
+            "method": "semantic",
+            "matched_skills": [],
+            "missing_skills": []
+        }
+    except Exception as e:
+        logger.warning(f"Embedding match failed, using keyword fallback: {e}")
+        # Keyword fallback — original logic
+        skills = ["python", "react", "fastapi", "next.js", "typescript", "aws", "docker",
+                  "sql", "machine learning", "ai"]
+        job_lower = job_text.lower()
+        resume_lower = resume_text.lower()
+        matched = [s for s in skills if s in job_lower and s in resume_lower]
+        score = min(50 + len(matched) * 5, 100)
+        return {
+            "match_score": score,
+            "method": "keyword_fallback",
+            "matched_skills": matched,
+            "missing_skills": [s for s in skills if s in job_lower and s not in resume_lower]
+        }
 
 @router.get("/insights/next-actions")
 def get_next_actions(
