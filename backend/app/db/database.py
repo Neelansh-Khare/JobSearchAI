@@ -2,39 +2,30 @@
 Database configuration and session management.
 """
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Database URL - defaults to SQLite for local development
-# For production, set DATABASE_URL environment variable (e.g., postgresql://user:pass@localhost/dbname)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./jobsearchai.db")
+_echo = os.getenv("SQLALCHEMY_ECHO", "false").lower() == "true"
 
-# Create engine
-# For SQLite, we need to allow multiple threads
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        echo=True  # Set to False in production
+        echo=_echo
     )
 else:
-    engine = create_engine(DATABASE_URL, echo=True)
+    engine = create_engine(DATABASE_URL, echo=_echo)
 
-# Create session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base class for models
 Base = declarative_base()
 
 
 def get_db():
-    """
-    Dependency function for FastAPI to get database session.
-    """
     db = SessionLocal()
     try:
         yield db
@@ -42,13 +33,25 @@ def get_db():
         db.close()
 
 
+def _run_migrations():
+    """Add any new columns that don't yet exist in the live schema."""
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+
+    if "applications" in tables:
+        existing = {c["name"] for c in inspector.get_columns("applications")}
+        with engine.connect() as conn:
+            if "follow_up_date" not in existing:
+                conn.execute(text("ALTER TABLE applications ADD COLUMN follow_up_date DATETIME"))
+                conn.commit()
+            if "follow_up_status" not in existing:
+                conn.execute(text(
+                    "ALTER TABLE applications ADD COLUMN follow_up_status VARCHAR DEFAULT 'pending'"
+                ))
+                conn.commit()
+
+
 def init_db():
-    """
-    Initialize database by creating all tables.
-    This should be called once at application startup.
-    """
-    # Import all models so they're registered with Base
     from app.models import user, job, resume, application, outreach, referral
-    
-    # Create all tables
     Base.metadata.create_all(bind=engine)
+    _run_migrations()

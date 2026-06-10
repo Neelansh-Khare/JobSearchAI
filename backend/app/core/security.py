@@ -4,8 +4,14 @@ from typing import Any, Union
 from jose import jwt
 from passlib.context import CryptContext
 
-# Set defaults if environment variables are not set
-SECRET_KEY = os.getenv("SECRET_KEY", "CHANGEME_FOR_PRODUCTION_ONLY_USE_ENVIRONMENT_VARIABLES")
+# Raise at import time if unset, preventing silent misuse
+_raw_key = os.getenv("SECRET_KEY")
+if not _raw_key:
+    raise RuntimeError(
+        "SECRET_KEY environment variable is not set. "
+        "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\""
+    )
+SECRET_KEY = _raw_key
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 1 week
 
