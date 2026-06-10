@@ -119,6 +119,8 @@ export interface Application {
   interview_date?: string;
   interview_notes?: string;
   interviewer_names?: string;
+  follow_up_date?: string;
+  follow_up_status?: 'pending' | 'sent' | 'dismissed';
   created_at: string;
   updated_at?: string;
 }

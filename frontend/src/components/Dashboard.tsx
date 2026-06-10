@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { JobSearchAPI } from '@/services/api';
-import { Job, DashboardStats, ActionableInsight } from '@/types';
+import { Job, DashboardStats, ActionableInsight, Application } from '@/types';
 import GlassCard from './GlassCard';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -13,6 +13,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [matchScores, setMatchScores] = useState<Record<number, number>>({});
   const [insights, setInsights] = useState<ActionableInsight[]>([]);
+  const [followUps, setFollowUps] = useState<Application[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -47,6 +48,11 @@ export default function Dashboard() {
         JobSearchAPI.getActionableInsights()
           .then(data => setInsights(data.insights))
           .catch(() => { /* insights unavailable — non-critical, widget stays hidden */ });
+
+        // Non-blocking follow-up fetch
+        JobSearchAPI.getFollowUps()
+          .then(data => setFollowUps(data))
+          .catch(() => { /* non-critical */ });
       } catch (error) {
         toast.error('Failed to load dashboard data');
       } finally {
@@ -127,6 +133,29 @@ export default function Dashboard() {
           <p className="text-3xl font-bold text-white">{stats?.velocity_7d ?? 0}</p>
         </GlassCard>
       </div>
+
+      {/* Follow-up Reminders Banner */}
+      {followUps.length > 0 && (
+        <section>
+          <GlassCard className="p-5 border-orange-500/30 bg-orange-500/5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-orange-400">
+                  {followUps.length} application{followUps.length > 1 ? 's' : ''} need{followUps.length === 1 ? 's' : ''} a follow-up
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Reach out to keep your candidacy fresh.
+                </p>
+              </div>
+              <Link href="/jobs">
+                <button className="glassmorphism text-xs px-3 py-1.5 text-orange-400 border-orange-500/30 hover:bg-orange-500/10 transition-all font-bold">
+                  View Jobs →
+                </button>
+              </Link>
+            </div>
+          </GlassCard>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         {/* Upcoming Interviews */}
