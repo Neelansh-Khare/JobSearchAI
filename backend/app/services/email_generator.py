@@ -235,4 +235,4 @@ Subject: [subject line]
             return response.text if response.text else "Failed to generate email"
         except Exception as e:
             logger.error(f"Gemini email generation error: {str(e)}")
-            return f"Error generating email: {str(e)}"
+            raise RuntimeError(f"Email generation failed: {str(e)}") from e

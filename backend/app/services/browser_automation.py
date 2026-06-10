@@ -101,7 +101,7 @@ class BrowserAutomationService:
         # Greenhouse often has 'LinkedIn Profile'
         try:
             await page.get_by_label("LinkedIn Profile").fill(data.get("linkedin", ""))
-        except:
+        except Exception:
             pass # Optional
             
         # 3. Resume Upload
@@ -160,7 +160,7 @@ class BrowserAutomationService:
         if resume_path and Path(resume_path).exists():
             try:
                 await page.locator("input[type='file']").first.set_input_files(resume_path)
-            except:
+            except Exception:
                 pass
                 
         return True
