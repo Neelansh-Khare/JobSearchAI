@@ -1,6 +1,9 @@
 """
 Job CRUD API endpoints.
 """
+import os
+import logging
+import json as _json
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -14,6 +17,13 @@ from app.models.user import User
 from app.models.application import Application
 from sqlalchemy import func
 from datetime import datetime, timedelta
+import google.generativeai as genai
+
+logger = logging.getLogger(__name__)
+
+_gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if _gemini_key:
+    genai.configure(api_key=_gemini_key)
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -109,6 +119,93 @@ def get_job_match_score(
         "matched_skills": matched_skills,
         "missing_skills": [skill for skill in skills if skill in job_text and skill not in resume_text]
     }
+
+@router.get("/insights/next-actions")
+def get_next_actions(
+    current_user: User = Depends(deps.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Return AI-generated actionable insights based on the user's job search data."""
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    seven_days_ago = datetime.now() - timedelta(days=7)
+
+    status_counts = db.query(Job.status, func.count(Job.id)).filter(
+        Job.user_id == current_user.id
+    ).group_by(Job.status).all()
+    counts = {str(s): c for s, c in status_counts}
+
+    apps_7d = db.query(func.count(Job.id)).filter(
+        Job.user_id == current_user.id,
+        Job.created_at >= seven_days_ago,
+        Job.status != JobStatus.NEW
+    ).scalar() or 0
+
+    stale_count = db.query(func.count(Job.id)).filter(
+        Job.user_id == current_user.id,
+        Job.status == JobStatus.APPLIED,
+        Job.created_at <= datetime.now() - timedelta(days=14)
+    ).scalar() or 0
+
+    upcoming_interviews = db.query(func.count(Application.id)).filter(
+        Application.user_id == current_user.id,
+        Application.interview_date >= datetime.now()
+    ).scalar() or 0
+
+    prompt = f"""You are a career coach analyzing someone's job search. Based on the data below, give 3-4 short, specific, actionable next-step recommendations.
+
+JOB SEARCH DATA:
+- Applications this week: {apps_7d}
+- Total by status: {counts}
+- Applications applied 14+ days ago with no response: {stale_count}
+- Upcoming interviews scheduled: {upcoming_interviews}
+
+Return a JSON array of insight objects. Each object must have:
+- "title": short action title (5-7 words)
+- "description": one sentence explaining why
+- "action_url": one of "/jobs", "/hunter", "/outreach", "/analytics", "/"
+- "priority": "high", "medium", or "low"
+
+Return ONLY the JSON array, no markdown."""
+
+    try:
+        model = genai.GenerativeModel("gemini-2.0-flash-lite")
+        response = model.generate_content(prompt)
+        insights = _json.loads(response.text)
+        return {"insights": insights}
+    except Exception as e:
+        logger.warning(f"Gemini insights generation failed, using fallback: {e}")
+        # Deterministic fallback
+        fallback = []
+        if apps_7d == 0:
+            fallback.append({
+                "title": "Apply to new jobs this week",
+                "description": "You have no applications in the past 7 days.",
+                "action_url": "/hunter",
+                "priority": "high"
+            })
+        if stale_count > 0:
+            fallback.append({
+                "title": f"Follow up on {stale_count} stale application(s)",
+                "description": "These were applied 2+ weeks ago with no status update.",
+                "action_url": "/jobs",
+                "priority": "high"
+            })
+        if upcoming_interviews > 0:
+            fallback.append({
+                "title": "Prepare for upcoming interviews",
+                "description": f"You have {upcoming_interviews} interview(s) scheduled.",
+                "action_url": "/jobs",
+                "priority": "high"
+            })
+        if not fallback:
+            fallback.append({
+                "title": "Tailor your resume for more jobs",
+                "description": "Customized resumes increase interview rates significantly.",
+                "action_url": "/",
+                "priority": "medium"
+            })
+        return {"insights": fallback}
+
 
 @router.post("/", response_model=JobResponse, status_code=201)
 def create_job(
