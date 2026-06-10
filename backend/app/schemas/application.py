@@ -2,7 +2,7 @@
 Pydantic schemas for Application model.
 """
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 
 
@@ -22,7 +22,7 @@ class ApplicationUpdate(BaseModel):
     interviewer_names: Optional[str] = None
     generated_interview_prep: Optional[dict] = None
     follow_up_date: Optional[datetime] = None
-    follow_up_status: Optional[str] = None
+    follow_up_status: Optional[Literal["pending", "sent", "dismissed"]] = None
 
 
 class ApplicationResponse(BaseModel):
@@ -42,7 +42,7 @@ class ApplicationResponse(BaseModel):
     interviewer_names: Optional[str]
     generated_interview_prep: Optional[dict]
     follow_up_date: Optional[datetime]
-    follow_up_status: Optional[str]
+    follow_up_status: Optional[Literal["pending", "sent", "dismissed"]]
     created_at: datetime
     updated_at: Optional[datetime]
 

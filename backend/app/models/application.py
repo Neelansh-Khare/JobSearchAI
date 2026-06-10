@@ -30,7 +30,7 @@ class Application(Base):
 
     # Follow-up Reminder Fields
     follow_up_date = Column(DateTime(timezone=True), nullable=True)
-    follow_up_status = Column(String, nullable=True, default="pending")  # pending, sent, dismissed
+    follow_up_status = Column(String, nullable=True, default=None)  # pending, sent, dismissed
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 # Import database initialization
 from app.db.database import init_db
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from datetime import datetime as _dt
+from datetime import datetime as dt_now
 from app.db.database import SessionLocal
-from app.models.application import Application as _Application
+from app.models.application import Application as ApplicationModel
 
 # Configure logging
 logging.basicConfig(
@@ -51,10 +51,10 @@ async def _check_follow_up_reminders():
     """Hourly background task: logs overdue follow-ups. Extend with email notifications as needed."""
     db = SessionLocal()
     try:
-        now = _dt.utcnow()
-        overdue = db.query(_Application).filter(
-            _Application.follow_up_date <= now,
-            _Application.follow_up_status == "pending"
+        now = dt_now.utcnow()
+        overdue = db.query(ApplicationModel).filter(
+            ApplicationModel.follow_up_date <= now,
+            ApplicationModel.follow_up_status == "pending"
         ).all()
         if overdue:
             logger.info(
@@ -70,6 +70,8 @@ async def _check_follow_up_reminders():
 @app.on_event("startup")
 async def startup_event():
     init_db()
+    # Note: interval trigger fires after the first interval (1h), not immediately.
+    # For immediate + hourly: add next_run_time=datetime.now() to the add_job call.
     scheduler.add_job(_check_follow_up_reminders, 'interval', hours=1, id='follow_up_check')
     scheduler.start()
     logger.info("Database initialized and scheduler started")
