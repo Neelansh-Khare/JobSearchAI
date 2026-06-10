@@ -212,4 +212,11 @@ export interface DashboardStats {
     interviews: number;
     offers: number;
   };
-} 
+}
+
+export interface ActionableInsight {
+  title: string;
+  description: string;
+  action_url: string;
+  priority: 'high' | 'medium' | 'low';
+}

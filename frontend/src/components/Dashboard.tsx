@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { JobSearchAPI } from '@/services/api';
-import { Job, DashboardStats } from '@/types';
+import { Job, DashboardStats, ActionableInsight } from '@/types';
 import GlassCard from './GlassCard';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -12,6 +12,7 @@ export default function Dashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [matchScores, setMatchScores] = useState<Record<number, number>>({});
+  const [insights, setInsights] = useState<ActionableInsight[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -41,6 +42,11 @@ export default function Dashboard() {
           }
         });
         setMatchScores(scores);
+
+        // Fetch AI insights non-blocking — don't delay loading state
+        JobSearchAPI.getActionableInsights()
+          .then(data => setInsights(data.insights))
+          .catch(() => {});
       } catch (error) {
         toast.error('Failed to load dashboard data');
       } finally {
@@ -216,6 +222,38 @@ export default function Dashboard() {
           )}
         </section>
       </div>
+
+      {/* Next Best Actions */}
+      {insights.length > 0 && (
+        <section className="space-y-6">
+          <h2 className="text-2xl font-bold text-white">Next Best Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {insights.map((insight, i) => (
+              <Link key={i} href={insight.action_url}>
+                <GlassCard className={`p-5 cursor-pointer hover:bg-white/5 transition-all border ${
+                  insight.priority === 'high' ? 'border-red-500/30 hover:border-red-500/50' :
+                  insight.priority === 'medium' ? 'border-yellow-500/30 hover:border-yellow-500/50' :
+                  'border-white/10 hover:border-white/20'
+                }`}>
+                  <div className="flex items-start gap-3">
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full mt-0.5 flex-shrink-0 ${
+                      insight.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      insight.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-white/10 text-gray-400'
+                    }`}>
+                      {insight.priority.toUpperCase()}
+                    </span>
+                    <div>
+                      <p className="font-bold text-white text-sm">{insight.title}</p>
+                      <p className="text-xs text-gray-400 mt-1">{insight.description}</p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Quick Actions */}
       <section className="pt-10 border-t border-white/5">

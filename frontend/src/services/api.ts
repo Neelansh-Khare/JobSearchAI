@@ -1,4 +1,4 @@
-import { CustomizeResumeResponse, Job, JobCreate, JobUpdate, Referral, ReferralCreate, ReferralUpdate } from '@/types';
+import { CustomizeResumeResponse, Job, JobCreate, JobUpdate, Referral, ReferralCreate, ReferralUpdate, ActionableInsight } from '@/types';
 
 interface NextWindow {
   __NEXT_DATA__?: {
@@ -359,6 +359,14 @@ export const JobSearchAPI = {
       throw new Error(errorData.detail || 'Failed to fetch job stats');
     }
 
+    return response.json();
+  },
+
+  getActionableInsights: async (): Promise<{ insights: ActionableInsight[] }> => {
+    const response = await fetch(`${API_BASE_URL}/jobs/insights/next-actions`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error('Failed to fetch insights');
     return response.json();
   },
 
