@@ -126,7 +126,6 @@ def get_next_actions(
     db: Session = Depends(get_db)
 ):
     """Return AI-generated actionable insights based on the user's job search data."""
-    thirty_days_ago = datetime.now() - timedelta(days=30)
     seven_days_ago = datetime.now() - timedelta(days=7)
 
     status_counts = db.query(Job.status, func.count(Job.id)).filter(
@@ -170,7 +169,19 @@ Return ONLY the JSON array, no markdown."""
     try:
         model = genai.GenerativeModel("gemini-2.0-flash-lite")
         response = model.generate_content(prompt)
-        insights = _json.loads(response.text)
+        text = response.text.strip()
+        # Gemini sometimes wraps JSON in markdown code blocks
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1]
+            if text.endswith("```"):
+                text = text.rsplit("```", 1)[0].strip()
+        insights = _json.loads(text)
+        # Validate each insight has required fields
+        required = {"title", "description", "action_url", "priority"}
+        if not isinstance(insights, list) or not all(
+            isinstance(i, dict) and required.issubset(i.keys()) for i in insights
+        ):
+            raise ValueError("Gemini returned unexpected insights schema")
         return {"insights": insights}
     except Exception as e:
         logger.warning(f"Gemini insights generation failed, using fallback: {e}")
