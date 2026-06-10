@@ -46,7 +46,7 @@ export default function Dashboard() {
         // Fetch AI insights non-blocking — don't delay loading state
         JobSearchAPI.getActionableInsights()
           .then(data => setInsights(data.insights))
-          .catch(() => {});
+          .catch(() => { /* insights unavailable — non-critical, widget stays hidden */ });
       } catch (error) {
         toast.error('Failed to load dashboard data');
       } finally {
@@ -228,8 +228,12 @@ export default function Dashboard() {
         <section className="space-y-6">
           <h2 className="text-2xl font-bold text-white">Next Best Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {insights.map((insight, i) => (
-              <Link key={i} href={insight.action_url}>
+            {insights.map((insight) => (
+              <Link key={insight.title} href={
+                ['/jobs', '/hunter', '/outreach', '/analytics', '/'].includes(insight.action_url)
+                  ? insight.action_url
+                  : '/'
+              }>
                 <GlassCard className={`p-5 cursor-pointer hover:bg-white/5 transition-all border ${
                   insight.priority === 'high' ? 'border-red-500/30 hover:border-red-500/50' :
                   insight.priority === 'medium' ? 'border-yellow-500/30 hover:border-yellow-500/50' :
