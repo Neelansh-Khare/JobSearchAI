@@ -195,7 +195,7 @@ def get_job(
     # Network Intelligence: Match job with referral contacts by company name
     referrals = db.query(Referral).filter(
         Referral.user_id == current_user.id,
-        Referral.company.ilike(job.company)
+        Referral.company.icontains(job.company, autoescape=True)
     ).all()
     job.network_contacts = referrals
     
