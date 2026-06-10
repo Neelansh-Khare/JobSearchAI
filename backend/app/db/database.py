@@ -40,15 +40,14 @@ def _run_migrations():
 
     if "applications" in tables:
         existing = {c["name"] for c in inspector.get_columns("applications")}
-        with engine.connect() as conn:
+        date_type = "TIMESTAMP WITH TIME ZONE" if DATABASE_URL.startswith("postgresql") else "DATETIME"
+        with engine.begin() as conn:
             if "follow_up_date" not in existing:
-                conn.execute(text("ALTER TABLE applications ADD COLUMN follow_up_date DATETIME"))
-                conn.commit()
+                conn.execute(text(f"ALTER TABLE applications ADD COLUMN follow_up_date {date_type}"))
             if "follow_up_status" not in existing:
                 conn.execute(text(
                     "ALTER TABLE applications ADD COLUMN follow_up_status VARCHAR DEFAULT 'pending'"
                 ))
-                conn.commit()
 
 
 def init_db():
