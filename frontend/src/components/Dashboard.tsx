@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { JobSearchAPI } from '@/services/api';
-import { Job } from '@/types';
+import { Job, DashboardStats } from '@/types';
 import GlassCard from './GlassCard';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [matchScores, setMatchScores] = useState<Record<number, number>>({});
@@ -22,22 +22,26 @@ export default function Dashboard() {
         ]);
         setStats(statsData);
         setJobs(jobsData);
-        
-        // Fetch match scores for recent jobs
-        const recent = [...jobsData].sort((a, b) => 
+
+        // Fetch match scores in parallel (fix N+1 + loading race)
+        const recent = [...jobsData]
+          .sort((a, b) =>
             new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-        ).slice(0, 5);
-        
-        recent.forEach(async (job) => {
-            try {
-                const scoreData = await JobSearchAPI.getJobMatchScore(job.id);
-                setMatchScores(prev => ({ ...prev, [job.id]: scoreData.match_score }));
-            } catch (e) {
-                console.error(`Failed to fetch match score for job ${job.id}`);
-            }
+          )
+          .slice(0, 5);
+
+        const scoreResults = await Promise.allSettled(
+          recent.map(job => JobSearchAPI.getJobMatchScore(job.id))
+        );
+
+        const scores: Record<number, number> = {};
+        scoreResults.forEach((result, i) => {
+          if (result.status === 'fulfilled') {
+            scores[recent[i].id] = result.value.match_score;
+          }
         });
+        setMatchScores(scores);
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
         toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
@@ -56,19 +60,26 @@ export default function Dashboard() {
     );
   }
 
-  const upcomingInterviews = jobs.filter(job => {
-    const interviewDate = job.applications?.[0]?.interview_date;
-    if (!interviewDate) return false;
-    return new Date(interviewDate) >= new Date();
-  }).sort((a, b) => {
-    const dateA = new Date(a.applications![0].interview_date!);
-    const dateB = new Date(b.applications![0].interview_date!);
-    return dateA.getTime() - dateB.getTime();
-  });
+  // Safe date helper — avoids non-null assertions on interview_date
+  const getInterviewDate = (job: Job): Date | null => {
+    const dateStr = job.applications?.[0]?.interview_date;
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
-  const recentJobs = [...jobs].sort((a, b) => 
-    new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
-  ).slice(0, 5);
+  const upcomingInterviews = jobs
+    .filter(job => {
+      const d = getInterviewDate(job);
+      return d !== null && d >= new Date();
+    })
+    .sort((a, b) => getInterviewDate(a)!.getTime() - getInterviewDate(b)!.getTime());
+
+  const recentJobs = [...jobs]
+    .sort((a, b) =>
+      new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+    )
+    .slice(0, 5);
 
   return (
     <div className="space-y-10 animate-fade-in">
@@ -95,19 +106,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <GlassCard className="p-6 border-blue-500/20">
           <p className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Applied</p>
-          <p className="text-3xl font-bold text-white">{stats?.funnel?.applied || 0}</p>
+          <p className="text-3xl font-bold text-white">{stats?.funnel?.applied ?? 0}</p>
         </GlassCard>
         <GlassCard className="p-6 border-purple-500/20">
           <p className="text-xs font-bold text-purple-400 uppercase tracking-wider mb-1">Interviews</p>
-          <p className="text-3xl font-bold text-white">{stats?.funnel?.interviews || 0}</p>
+          <p className="text-3xl font-bold text-white">{stats?.funnel?.interviews ?? 0}</p>
         </GlassCard>
         <GlassCard className="p-6 border-green-500/20">
           <p className="text-xs font-bold text-green-400 uppercase tracking-wider mb-1">Offers</p>
-          <p className="text-3xl font-bold text-white">{stats?.funnel?.offers || 0}</p>
+          <p className="text-3xl font-bold text-white">{stats?.funnel?.offers ?? 0}</p>
         </GlassCard>
         <GlassCard className="p-6 border-indigo-500/20">
           <p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">Velocity (7d)</p>
-          <p className="text-3xl font-bold text-white">{stats?.velocity_7d || 0}</p>
+          <p className="text-3xl font-bold text-white">{stats?.velocity_7d ?? 0}</p>
         </GlassCard>
       </div>
 
@@ -119,27 +130,30 @@ export default function Dashboard() {
           </h2>
           {upcomingInterviews.length > 0 ? (
             <div className="space-y-4">
-              {upcomingInterviews.map(job => (
-                <GlassCard key={`dashboard-int-${job.id}`} className="p-4 border-purple-500/30 hover:border-purple-500/50 transition-all">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="font-bold text-white">{job.title}</h3>
-                      <p className="text-sm text-gray-400">{job.company}</p>
+              {upcomingInterviews.map(job => {
+                const interviewDate = getInterviewDate(job)!;
+                return (
+                  <GlassCard key={`dashboard-int-${job.id}`} className="p-4 border-purple-500/30 hover:border-purple-500/50 transition-all">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h3 className="font-bold text-white">{job.title}</h3>
+                        <p className="text-sm text-gray-400">{job.company}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-purple-400">
+                          {interviewDate.toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </p>
+                        <Link href="/jobs" className="text-[10px] text-gray-500 hover:text-white transition-colors">
+                          View Details →
+                        </Link>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-purple-400">
-                        {new Date(job.applications![0].interview_date!).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
-                      </p>
-                      <Link href="/jobs" className="text-[10px] text-gray-500 hover:text-white transition-colors">
-                        View Details →
-                      </Link>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
+                  </GlassCard>
+                );
+              })}
             </div>
           ) : (
             <GlassCard className="p-10 text-center border-dashed border-2 border-white/5">

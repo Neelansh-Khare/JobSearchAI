@@ -201,4 +201,15 @@ export interface ReferralUpdate {
   relationship?: string;
   status?: string;
   notes?: string;
+}
+
+export interface DashboardStats {
+  status_distribution: Record<string, number>;
+  velocity_30d: number;
+  velocity_7d: number;
+  funnel: {
+    applied: number;
+    interviews: number;
+    offers: number;
+  };
 } 
