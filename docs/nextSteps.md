@@ -158,19 +158,24 @@ Transform the current single-function Resume Customizer into a holistic **Job Se
    - ✅ AI Interview Prep (Tailored questions).
    - ✅ Performance Insights (Funnel analysis).
 
-### Phase 7: "The Command Center" (Intelligent Dashboard) [IN PROGRESS]
+### Phase 7: "The Command Center" (Intelligent Dashboard) ✅ COMPLETE
 *Goal: Centralize the job search experience with actionable insights and a unified view.*
 
-1.  **Unified Dashboard**:
-    *   Consolidate stats, upcoming interviews, and recent activity into one view.
-    *   AI-powered "Next Best Action" recommendations.
-2.  **Job Matching Score**:
-    *   Calculate a match percentage between the user's base resume and saved jobs.
-3.  **Application Follow-ups**:
-    *   Automated reminders to follow up on applications after X days.
+1.  **Unified Dashboard** ✅:
+    *   Consolidated stats, upcoming interviews, and recent activity.
+    *   AI-powered "Next Best Action" recommendations via Gemini.
+2.  **Job Matching Score** ✅:
+    *   Semantic match score using Gemini text-embedding-004 + cosine similarity.
+    *   Keyword fallback when Gemini API is unavailable.
+3.  **Application Follow-ups** ✅:
+    *   `follow_up_date` and `follow_up_status` fields on Application model.
+    *   Background scheduler (APScheduler) checks overdue follow-ups hourly.
+    *   `/applications/follow-ups` endpoint for pending reminders.
+    *   Dashboard banner highlights applications needing follow-up.
 
-8. **Milestone 8 – Intelligent Dashboard** [IN PROGRESS]
-   - [x] Unified User Dashboard (Landing page for logged-in users).
-   - [x] AI Job Match Scoring (MVP).
-   - [ ] Actionable search insights.
+8. **Milestone 8 – Intelligent Dashboard** ✅ **COMPLETE**
+   - ✅ Unified User Dashboard (Landing page for logged-in users).
+   - ✅ AI Job Match Scoring (Semantic — Gemini text-embedding-004).
+   - ✅ Actionable Search Insights (AI-powered Next Best Actions on Dashboard).
+   - ✅ Application Follow-up Reminders (model + scheduler + frontend banner).
 
