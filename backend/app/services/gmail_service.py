@@ -9,21 +9,19 @@ from datetime import datetime
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-import google.generativeai as genai
 from sqlalchemy.orm import Session
 
 from ..models.user import User
 from ..models.application import Application
 from ..models.job import Job, JobStatus
 from ..prompts import GMAIL_EMAIL_PARSING_PROMPT
+from .ollama_client import generate_text as _ollama_generate
 
 logger = logging.getLogger(__name__)
 
 class GmailService:
     def __init__(self, db: Session):
         self.db = db
-        # Using the same model as in main.py
-        self.model = genai.GenerativeModel("gemini-2.0-flash-lite")
 
     def _get_gmail_client(self, user_id: int):
         user = self.db.query(User).filter(User.id == user_id).first()
@@ -135,13 +133,10 @@ class GmailService:
         return ""
 
     def _parse_email_content(self, content: str) -> Optional[Dict[str, Any]]:
-        """Uses Gemini to extract job status from email content."""
+        """Uses local Ollama to extract job status from email content."""
         try:
             prompt = GMAIL_EMAIL_PARSING_PROMPT.format(email_content=content[:4000])
-            response = self.model.generate_content(prompt)
-            
-            # Extract JSON from response
-            text = response.text.strip()
+            text = _ollama_generate(prompt=prompt, json_mode=True).strip()
             if "```json" in text:
                 text = text.split("```json")[1].split("```")[0].strip()
             

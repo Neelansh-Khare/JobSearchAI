@@ -7,7 +7,7 @@ import GlassCard from './GlassCard';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
-export default function Dashboard() {
+export default function Dashboard({ onOpenCustomizer }: { onOpenCustomizer?: () => void }) {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
@@ -292,13 +292,13 @@ export default function Dashboard() {
       <section className="pt-10 border-t border-white/5">
         <h2 className="text-2xl font-bold text-white mb-8">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Link href="/">
+          <button onClick={onOpenCustomizer} className="text-left w-full">
             <GlassCard className="p-6 hover:bg-white/5 transition-all cursor-pointer group">
               <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">✨</div>
               <h3 className="text-lg font-bold text-white mb-2">Tailor Resume</h3>
               <p className="text-sm text-gray-400">Optimize your resume for a specific job.</p>
             </GlassCard>
-          </Link>
+          </button>
           <Link href="/hunter">
             <GlassCard className="p-6 hover:bg-white/5 transition-all cursor-pointer group">
               <div className="text-3xl mb-4 group-hover:scale-110 transition-transform">🔍</div>

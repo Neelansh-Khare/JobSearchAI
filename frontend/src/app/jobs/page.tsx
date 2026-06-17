@@ -22,7 +22,7 @@ export default function JobsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await JobSearchAPI.getJobs(1, statusFilter || undefined);
+      const data = await JobSearchAPI.getJobs(statusFilter || undefined);
       setJobs(data);
     } catch (err) {
       console.error('Error loading jobs:', err);

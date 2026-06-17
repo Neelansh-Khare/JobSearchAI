@@ -1,19 +1,11 @@
-import os
 import json
 import logging
 from typing import Dict, Any, List, Optional
-import google.generativeai as genai
 from sqlalchemy.orm import Session
 from ..models.application import Application
+from .ollama_client import generate_text as _ollama_generate
 
 logger = logging.getLogger(__name__)
-
-# Configure Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
-MODEL_NAME = "gemini-2.0-flash"
 
 class InterviewPrepService:
     def __init__(self, db: Session):
@@ -79,31 +71,21 @@ Format the response as a JSON object with the following structure:
 IMPORTANT: Return ONLY the JSON object, no other text."""
 
         try:
-            model = genai.GenerativeModel(
-                model_name=MODEL_NAME,
-                system_instruction=system_instruction
+            content = _ollama_generate(
+                prompt=prompt,
+                system_prompt=system_instruction,
+                temperature=0.7,
+                json_mode=True,
             )
-            
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.7,
-                    response_mime_type="application/json"
-                )
-            )
-            
-            content = response.text
             try:
-                prep_data = json.loads(content)
-                return prep_data
+                return json.loads(content)
             except json.JSONDecodeError:
-                # Attempt to extract JSON if it's wrapped in markdown
                 json_start = content.find('{')
                 json_end = content.rfind('}') + 1
                 if json_start >= 0 and json_end > json_start:
                     return json.loads(content[json_start:json_end])
                 raise ValueError("Failed to parse AI response as JSON")
-                
+
         except Exception as e:
             logger.error(f"Error generating interview prep: {str(e)}")
             raise Exception(f"Failed to generate interview prep: {str(e)}")

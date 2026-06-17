@@ -21,5 +21,5 @@ class Referral(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = orm_relationship("User", backref="referrals")
+    user = orm_relationship("User", back_populates="referrals")
     job = orm_relationship("Job", backref="referrals")

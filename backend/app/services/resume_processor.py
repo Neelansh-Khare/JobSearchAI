@@ -7,13 +7,11 @@ import json
 import re
 import logging
 import os
-import time
-import random
 from typing import Dict, Any, List, Optional
 from datetime import datetime
-import google.generativeai as genai
 from contextlib import contextmanager
 from pathlib import Path
+from app.services.ollama_client import generate_text as _ollama_generate
 
 # Import prompts
 from app.prompts import (
@@ -28,17 +26,10 @@ from app.prompts import (
 # Configure logging
 logger = logging.getLogger(__name__)
 
-# Constants
-MODEL_NAME = "gemini-2.0-flash-lite"
 OUTPUT_DIR = "output"
 
 # Ensure output directory exists
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-# Configure Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
 
 #------------------------------------------------------------
 # CORE UTILITY FUNCTIONS
@@ -66,43 +57,14 @@ def parse_json_response(content: str) -> Dict[str, Any]:
         raise ValueError("Failed to parse AI response as JSON")
 
 def call_ai_service(prompt: str, system_prompt: str, json_response: bool = True, temperature: float = 0.2) -> Any:
-    """Make a request to the Google Gemini API with automatic retries."""
-    if not GEMINI_API_KEY:
-        raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY must be set in the .env file")
-        
-    max_retries = 5
-    base_delay = 2
-    
-    model = genai.GenerativeModel(
-        model_name=MODEL_NAME,
-        system_instruction=system_prompt
-    )
-    
-    generation_config = genai.types.GenerationConfig(
+    """Make a request to the local Ollama instance."""
+    content = _ollama_generate(
+        prompt=prompt,
+        system_prompt=system_prompt,
         temperature=temperature,
-        max_output_tokens=8192,
-        response_mime_type="application/json" if json_response else "text/plain"
+        json_mode=json_response,
     )
-    
-    for attempt in range(max_retries):
-        try:
-            response = model.generate_content(
-                prompt,
-                generation_config=generation_config
-            )
-            content = response.text
-            return parse_json_response(content) if json_response else content
-            
-        except Exception as e:
-            error_str = str(e)
-            if "429" in error_str or "quota" in error_str.lower():
-                if attempt < max_retries - 1:
-                    delay = (base_delay * (2 ** attempt)) + random.uniform(0, 1)
-                    logger.warning(f"Rate limit hit. Retrying in {delay:.2f}s... (Attempt {attempt + 1}/{max_retries})")
-                    time.sleep(delay)
-                    continue
-            logger.error(f"Gemini API error: {e}")
-            raise
+    return parse_json_response(content) if json_response else content
 
 #------------------------------------------------------------
 # DOCUMENT PROCESSING FUNCTIONS

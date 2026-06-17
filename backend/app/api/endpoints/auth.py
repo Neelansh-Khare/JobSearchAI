@@ -106,7 +106,7 @@ def delete_user_me(
     *,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(deps.get_current_user),
-) -> Any:
+) -> None:
     """
     Delete own user account.
     """

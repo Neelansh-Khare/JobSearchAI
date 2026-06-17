@@ -20,5 +20,5 @@ class Resume(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", backref="resumes")
+    user = relationship("User", back_populates="resumes")
     applications = relationship("Application", back_populates="resume")

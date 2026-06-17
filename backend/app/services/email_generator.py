@@ -3,18 +3,14 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 
-import google.generativeai as genai
-import google.generativeai.types as types
 from apify_client import ApifyClient
 from sqlalchemy.orm import Session
 
 from ..models.user import User
 from ..models.outreach import Outreach
+from .ollama_client import generate_text as _ollama_generate
 
 logger = logging.getLogger(__name__)
-
-# Initialize Gemini client
-gemini_client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 class EmailGeneratorService:
     def __init__(self, db: Session):
@@ -104,9 +100,9 @@ class EmailGeneratorService:
             logger.error(f"LinkedIn search error with Apify: {str(e)}")
             return None
 
-    def _find_contacts_gemini(self, company_type: str, role_types: List[str], location: str) -> List[Dict[str, Any]]:
+    def _find_contacts_ai(self, company_type: str, role_types: List[str], location: str) -> List[Dict[str, Any]]:
         """
-        Fallback: Generate fictional contacts using Gemini.
+        Fallback: Generate fictional contacts using local Ollama.
         """
         role_types_str = ', '.join(role_types) if role_types else 'Hiring Manager, Recruiter, Software Engineer'
         prompt = f"""Generate a list of 5 potential hiring manager contacts at {company_type} companies in {location}.
@@ -128,26 +124,17 @@ Example format:
 IMPORTANT: Return ONLY the JSON array, no other text."""
 
         try:
-            response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash-lite",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json"
-                )
-            )
-            
-            contacts_text = response.text if response.text else "[]"
+            contacts_text = _ollama_generate(prompt=prompt, json_mode=True) or "[]"
             contacts = json.loads(contacts_text)
-            
-            # Add source marker and ensure linkedin_url
+
             for contact in contacts:
                 contact['source'] = 'fictional'
                 if 'linkedin_url' not in contact:
                     contact['linkedin_url'] = ''
-            
+
             return contacts
         except Exception as e:
-            logger.error(f"Gemini fictional contact generation error: {str(e)}")
+            logger.error(f"AI fictional contact generation error: {str(e)}")
             return []
 
     def find_contacts(self, user_id: int, company_type: str, role_types: List[str], location: str, use_linkedin: bool = False, max_results: int = 5) -> List[Dict[str, Any]]:
@@ -160,8 +147,8 @@ IMPORTANT: Return ONLY the JSON array, no other text."""
             if linkedin_contacts:
                 contacts = linkedin_contacts
         
-        if not contacts: # Fallback to Gemini
-            contacts = self._find_contacts_gemini(company_type, role_types, location)
+        if not contacts:
+            contacts = self._find_contacts_ai(company_type, role_types, location)
         
         return contacts
 
@@ -225,14 +212,7 @@ Subject: [subject line]
 [email body with complete signature]
 """
         try:
-            response = gemini_client.models.generate_content(
-                model="gemini-2.0-flash-lite",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction
-                )
-            )
-            return response.text if response.text else "Failed to generate email"
+            return _ollama_generate(prompt=prompt, system_prompt=system_instruction) or "Failed to generate email"
         except Exception as e:
-            logger.error(f"Gemini email generation error: {str(e)}")
+            logger.error(f"AI email generation error: {str(e)}")
             raise RuntimeError(f"Email generation failed: {str(e)}") from e

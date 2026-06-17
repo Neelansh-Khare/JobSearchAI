@@ -37,7 +37,7 @@ class Job(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     # Relationships
-    user = relationship("User", backref="jobs")
+    user = relationship("User", back_populates="jobs")
     applications = relationship("Application", back_populates="job", cascade="all, delete-orphan")
     outreach_items = relationship("Outreach", back_populates="job", cascade="all, delete-orphan")
 

@@ -2,63 +2,58 @@
 
 ## Prerequisites — One-Time Setup
 
-### 1. Install Runtime Dependencies
-- **Python 3.11+** — `python --version`
-- **Node.js 18+** — `node --version`
-- **npm** — `npm --version`
+### 1. Install Docker Desktop
+- **Docker Desktop** — [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+- Verify: `docker --version` and `docker compose version`
 
-### 2. Get API Keys
+### 2. Start Ollama (AI backend — runs on host, not in Docker)
+
+All AI features run locally via [Ollama](https://ollama.com). It runs on your host machine; Docker talks to it via `host.docker.internal`.
+
+```bash
+# Install Ollama from https://ollama.com, then pull the required models:
+ollama pull llama3.2          # text generation
+ollama pull nomic-embed-text  # semantic embeddings
+```
+
+Ollama must be running (`ollama serve`) before starting the stack.
+
+### 3. Get API Keys
 
 | Key | Where to get it | Required? |
 |-----|----------------|-----------|
-| `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) | Yes — for resume tailoring, email gen, match score, insights |
 | `JSEARCH_API_KEY` | [RapidAPI → JSearch](https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch) | Yes — for job discovery (Hunter page) |
 | `GMAIL_CLIENT_ID` / `GMAIL_CLIENT_SECRET` | [Google Cloud Console → OAuth 2.0](https://console.cloud.google.com/apis/credentials) | Optional — for Gmail OAuth |
 | `SECRET_KEY` | Generate: `python -c "import secrets; print(secrets.token_hex(32))"` | Yes — JWT signing |
 
-### 3. Create `backend/.env`
+### 4. Create `backend/.env`
 ```
 SECRET_KEY=your_generated_secret_key
-GEMINI_API_KEY=your_gemini_key
 JSEARCH_API_KEY=your_jsearch_key
+OLLAMA_BASE_URL=http://host.docker.internal:11434
+OLLAMA_MODEL=llama3.2
+OLLAMA_EMBED_MODEL=nomic-embed-text
 GMAIL_CLIENT_ID=optional
 GMAIL_CLIENT_SECRET=optional
 GMAIL_REDIRECT_URI=http://localhost:8000/gmail/callback
 ```
 
-### 4. Install Backend Dependencies
-```bash
-cd backend
-pip install -r requirements.txt
-playwright install chromium   # for browser auto-apply
-```
-
-### 5. Install Frontend Dependencies
-```bash
-cd frontend
-npm install
-```
+> `host.docker.internal` lets the backend container reach Ollama running on your host machine.
 
 ---
 
 ## 0. Startup
 
-### Backend
 ```bash
-cd backend
-uvicorn main:app --reload --port 8000
+docker compose up --build
 ```
-- [ ] Server starts without errors
-- [ ] `http://localhost:8000/docs` — Swagger UI loads, all routers listed
-- [ ] `http://localhost:8000/health` (or any unprotected endpoint) responds
 
-### Frontend
-```bash
-cd frontend
-npm run dev
-```
-- [ ] Dev server starts on `http://localhost:3000`
+- [ ] All three containers start: `db`, `backend`, `frontend`
+- [ ] `http://localhost:8000/docs` — Swagger UI loads, all routers listed
 - [ ] `http://localhost:3000` loads (redirects to `/login` if not authenticated)
+
+To stop: `docker compose down`  
+To wipe the database too: `docker compose down -v`
 
 ---
 
@@ -82,7 +77,7 @@ npm run dev
 - [ ] "Upcoming Interviews" section renders (empty state or interview cards)
 - [ ] "Recent Activity" section shows last 5 saved jobs with status badges
 - [ ] Match score badges (e.g. "72% Match") appear next to recent jobs when a resume exists
-- [ ] "Next Best Actions" widget appears with AI-generated cards (requires Gemini key + some data)
+- [ ] "Next Best Actions" widget appears with AI-generated cards (requires Ollama running + some data)
   - [ ] Cards show priority badges (HIGH / MEDIUM / LOW) with color coding
   - [ ] Clicking a card navigates to the correct page
 - [ ] If any applications have overdue follow-up dates → orange banner appears at top
@@ -94,7 +89,7 @@ npm run dev
 
 - [ ] Paste a job description and your base resume → click **Tailor Resume**
 - [ ] Spinner/loading state shown during AI call
-- [ ] Tailored resume output appears (Gemini-generated, formatted text)
+- [ ] Tailored resume output appears (AI-generated via Ollama, formatted text)
 - [ ] Submit with empty fields → validation error, no API call made
 - [ ] Resume is saved to your account after tailoring (appears in future match scoring)
 
@@ -110,7 +105,7 @@ npm run dev
 - [ ] Edit a job → change status/notes → save → changes persist on refresh
 - [ ] **Delete** a job → confirmation → job removed from board
 - [ ] Filter by company name → only matching jobs shown
-- [ ] **AI Interview Prep** button on a job → generates tailored interview questions (requires Gemini)
+- [ ] **AI Interview Prep** button on a job → generates tailored interview questions (requires Ollama running)
 - [ ] Set `follow_up_date` on an applied job to a past date → orange banner appears on Dashboard
 
 ---
@@ -130,7 +125,7 @@ npm run dev
 
 - [ ] Select or paste a job description
 - [ ] Select email type (cold outreach / cover letter / referral request)
-- [ ] Click **Generate** → AI-written email appears (requires Gemini)
+- [ ] Click **Generate** → AI-written email appears (requires Ollama running)
 - [ ] Copy button copies the generated email to clipboard
 - [ ] Generated outreach saved to outreach history (visible on same page)
 - [ ] Empty inputs → validation error before API call
@@ -184,8 +179,8 @@ npm run dev
 
 - [ ] With a saved resume and saved jobs, Dashboard shows percentage badges
 - [ ] Badge color: green ≥ 80%, yellow ≥ 60%, red < 60%
-- [ ] API response includes `"method": "semantic"` when Gemini key is set
-- [ ] With Gemini key missing/invalid → fallback returns `"method": "keyword_fallback"`, score still shown
+- [ ] API response includes `"method": "semantic"` when Ollama is running with `nomic-embed-text` pulled
+- [ ] With Ollama unreachable → fallback returns `"method": "keyword_fallback"`, score still shown
 
 ---
 

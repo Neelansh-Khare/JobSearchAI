@@ -17,13 +17,9 @@ from app.models.user import User
 from app.models.application import Application
 from sqlalchemy import func
 from datetime import datetime, timedelta
-import google.generativeai as genai
+from app.services.ollama_client import generate_text as _ollama_generate, embed_text as _ollama_embed
 
 logger = logging.getLogger(__name__)
-
-_gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-if _gemini_key:
-    genai.configure(api_key=_gemini_key)
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
@@ -88,7 +84,7 @@ def get_job_match_score(
 ):
     """
     Calculate a semantic match score between a job and the user's latest resume
-    using Gemini text embeddings and cosine similarity.
+    using local Ollama embeddings and cosine similarity.
     """
     job = db.query(Job).filter(Job.id == job_id, Job.user_id == current_user.id).first()
     if not job:
@@ -110,20 +106,8 @@ def get_job_match_score(
         return {"match_score": 0, "message": "Resume has no text content"}
 
     try:
-        if not _gemini_key:
-            raise RuntimeError("GEMINI_API_KEY not configured — semantic scoring unavailable")
-        # Embed both texts using Gemini
-        job_emb_result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=job_text[:8000],
-        )
-        resume_emb_result = genai.embed_content(
-            model="models/text-embedding-004",
-            content=resume_text[:8000],
-        )
-
-        job_vec = job_emb_result["embedding"]
-        resume_vec = resume_emb_result["embedding"]
+        job_vec = _ollama_embed(job_text[:8000])
+        resume_vec = _ollama_embed(resume_text[:8000])
 
         # Cosine similarity (no external deps)
         dot = sum(a * b for a, b in zip(job_vec, resume_vec))
@@ -203,24 +187,20 @@ Return a JSON array of insight objects. Each object must have:
 Return ONLY the JSON array, no markdown."""
 
     try:
-        model = genai.GenerativeModel("gemini-2.0-flash-lite")
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        # Gemini sometimes wraps JSON in markdown code blocks
+        text = _ollama_generate(prompt=prompt, json_mode=True).strip()
         if text.startswith("```"):
             text = text.split("\n", 1)[1]
             if text.endswith("```"):
                 text = text.rsplit("```", 1)[0].strip()
         insights = _json.loads(text)
-        # Validate each insight has required fields
         required = {"title", "description", "action_url", "priority"}
         if not isinstance(insights, list) or not all(
             isinstance(i, dict) and required.issubset(i.keys()) for i in insights
         ):
-            raise ValueError("Gemini returned unexpected insights schema")
+            raise ValueError("Unexpected insights schema from AI")
         return {"insights": insights}
     except Exception as e:
-        logger.warning(f"Gemini insights generation failed, using fallback: {e}")
+        logger.warning(f"AI insights generation failed, using fallback: {e}")
         # Deterministic fallback
         fallback = []
         if apps_7d == 0:

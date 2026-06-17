@@ -57,15 +57,7 @@ export default function Home() {
     return (
       <div className="min-h-screen p-4 md:p-8 animate-fade-in">
         <main className="max-w-7xl mx-auto space-y-20 pb-20">
-          <Dashboard />
-          <div className="text-center">
-            <button 
-              onClick={() => setShowCustomizer(true)}
-              className="text-gray-500 hover:text-white transition-colors text-sm"
-            >
-              Need to customize a resume? Click here.
-            </button>
-          </div>
+          <Dashboard onOpenCustomizer={() => setShowCustomizer(true)} />
         </main>
       </div>
     );
@@ -116,8 +108,24 @@ export default function Home() {
           <section className="relative">
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl -z-10"></div>
             <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl -z-10"></div>
-            <h2 className="text-3xl font-bold text-center mb-10 text-white">Start Customizing</h2>
-            <JobApplicationForm onSubmit={handleSubmit} isLoading={isLoading} />
+            {isLoggedIn ? (
+              <>
+                <h2 className="text-3xl font-bold text-center mb-10 text-white">Start Customizing</h2>
+                <JobApplicationForm onSubmit={handleSubmit} isLoading={isLoading} />
+              </>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-xl text-gray-400 mb-8">Create a free account to start tailoring your resume.</p>
+                <div className="flex justify-center gap-4">
+                  <a href="/register" className="glassmorphism px-8 py-3 bg-indigo-600/20 hover:bg-indigo-600/30 text-white font-bold transition-all">
+                    Sign Up Free
+                  </a>
+                  <a href="/login" className="glassmorphism px-8 py-3 hover:bg-white/10 text-white font-bold transition-all">
+                    Log In
+                  </a>
+                </div>
+              </div>
+            )}
           </section>
         ) : (
           <section className="animate-fade-in">
