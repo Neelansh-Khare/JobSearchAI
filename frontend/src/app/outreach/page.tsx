@@ -109,20 +109,28 @@ export default function OutreachPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center text-indigo-400">Outreach Automation</h1>
+    <div className="min-h-screen p-4 md:p-8 animate-fade-in">
+      <main className="max-w-7xl mx-auto space-y-8">
+        <header>
+          <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+            Outreach Automation
+          </h1>
+          <p className="text-gray-400 mt-2 text-lg">Generate personalized emails and find contacts.</p>
+        </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Email Generation Card */}
         <GlassCard className="p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-indigo-300">Generate Email</h2>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <span className="mr-2">✉️</span> Generate Email
+          </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="emailPurpose" className="block text-sm font-medium text-gray-300">Purpose</label>
               <input
                 type="text"
                 id="emailPurpose"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={emailPurpose}
                 onChange={(e) => setEmailPurpose(e.target.value)}
                 placeholder="e.g., Cold outreach for a software engineer role"
@@ -132,7 +140,7 @@ export default function OutreachPage() {
               <label htmlFor="emailTone" className="block text-sm font-medium text-gray-300">Tone</label>
               <select
                 id="emailTone"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={emailTone}
                 onChange={(e) => setEmailTone(e.target.value)}
               >
@@ -146,7 +154,7 @@ export default function OutreachPage() {
               <input
                 type="text"
                 id="recipientName"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={recipientName}
                 onChange={(e) => setRecipientName(e.target.value)}
                 placeholder="e.g., Jane Doe"
@@ -157,7 +165,7 @@ export default function OutreachPage() {
               <input
                 type="text"
                 id="recipientCompany"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={recipientCompany}
                 onChange={(e) => setRecipientCompany(e.target.value)}
                 placeholder="e.g., Google"
@@ -168,7 +176,7 @@ export default function OutreachPage() {
               <textarea
                 id="additionalContext"
                 rows={3}
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={additionalContext}
                 onChange={(e) => setAdditionalContext(e.target.value)}
                 placeholder="e.g., Referencing a recent project or mutual connection."
@@ -183,15 +191,15 @@ export default function OutreachPage() {
             </GlassButton>
             {emailError && <p className="text-red-400 text-sm mt-2">{emailError}</p>}
             {generatedEmail && (
-              <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700 space-y-4">
-                <h3 className="text-xl font-medium mb-2 text-indigo-200">Generated Email:</h3>
-                
+              <div className="mt-4 p-4 glassmorphism space-y-4">
+                <h3 className="text-xl font-medium mb-2 text-white">Generated Email:</h3>
+
                 <div>
                   <label htmlFor="emailSubject" className="block text-xs font-medium text-gray-400">Subject</label>
                   <input
                     type="text"
                     id="emailSubject"
-                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm"
+                    className="mt-1 block w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white text-sm"
                     value={emailSubject}
                     onChange={(e) => setEmailSubject(e.target.value)}
                   />
@@ -202,7 +210,7 @@ export default function OutreachPage() {
                   <input
                     type="email"
                     id="recipientEmail"
-                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm"
+                    className="mt-1 block w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white text-sm"
                     value={recipientEmail}
                     onChange={(e) => setRecipientEmail(e.target.value)}
                     placeholder="e.g., jane@company.com"
@@ -214,7 +222,7 @@ export default function OutreachPage() {
                   <textarea
                     id="emailBody"
                     rows={10}
-                    className="mt-1 block w-full rounded-md border-gray-700 bg-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white text-sm font-mono"
+                    className="mt-1 block w-full p-2.5 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white text-sm font-mono"
                     value={generatedEmail}
                     onChange={(e) => setGeneratedEmail(e.target.value)}
                   ></textarea>
@@ -230,7 +238,8 @@ export default function OutreachPage() {
                   <GlassButton
                     onClick={handleSendEmail}
                     disabled={sendLoading}
-                    className="flex-1 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700"
+                    variant="primary"
+                    className="flex-1 px-4 py-2 text-sm"
                   >
                     {sendLoading ? 'Sending...' : 'Send via Gmail'}
                   </GlassButton>
@@ -243,14 +252,16 @@ export default function OutreachPage() {
 
         {/* Contact Finding Card */}
         <GlassCard className="p-6">
-          <h2 className="text-2xl font-semibold mb-4 text-indigo-300">Find Contacts</h2>
+          <h2 className="text-2xl font-semibold mb-4 flex items-center">
+            <span className="mr-2">🔍</span> Find Contacts
+          </h2>
           <div className="space-y-4">
             <div>
               <label htmlFor="companyType" className="block text-sm font-medium text-gray-300">Company Type</label>
               <input
                 type="text"
                 id="companyType"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={companyType}
                 onChange={(e) => setCompanyType(e.target.value)}
                 placeholder="e.g., Big Tech, Startup, Fintech"
@@ -261,7 +272,7 @@ export default function OutreachPage() {
               <input
                 type="text"
                 id="roleTypes"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={roleTypes}
                 onChange={(e) => setRoleTypes(e.target.value)}
                 placeholder="e.g., Hiring Manager, Staff Engineer, Recruiter"
@@ -272,7 +283,7 @@ export default function OutreachPage() {
               <input
                 type="text"
                 id="location"
-                className="mt-1 block w-full rounded-md border-gray-700 bg-gray-800 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-white"
+                className="mt-1 block w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g., San Francisco, CA"
@@ -282,7 +293,7 @@ export default function OutreachPage() {
               <input
                 type="checkbox"
                 id="useLinkedin"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-700 rounded bg-gray-800"
+                className="h-4 w-4 text-blue-500 focus:ring-blue-500/50 border-white/10 rounded bg-white/5"
                 checked={useLinkedin}
                 onChange={(e) => setUseLinkedin(e.target.checked)}
               />
@@ -299,14 +310,14 @@ export default function OutreachPage() {
             </GlassButton>
             {contactsError && <p className="text-red-400 text-sm mt-2">{contactsError}</p>}
             {foundContacts.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-800 rounded-md border border-gray-700">
-                <h3 className="text-xl font-medium mb-2 text-indigo-200">Found Contacts:</h3>
+              <div className="mt-4 p-4 glassmorphism">
+                <h3 className="text-xl font-medium mb-2 text-white">Found Contacts:</h3>
                 <ul className="list-disc pl-5 space-y-2 text-gray-100">
                   {foundContacts.map((contact, index) => (
                     <li key={index}>
                       <strong>{contact.name}</strong> - {contact.title} at {contact.company} ({contact.location})
                       {contact.linkedin_url && (
-                        <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline ml-2 text-sm">LinkedIn</a>
+                        <a href={contact.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline ml-2 text-sm">LinkedIn</a>
                       )}
                       <span className="ml-2 text-xs text-gray-400">({contact.source})</span>
                     </li>
@@ -317,6 +328,7 @@ export default function OutreachPage() {
           </div>
         </GlassCard>
       </div>
+      </main>
     </div>
   );
 }

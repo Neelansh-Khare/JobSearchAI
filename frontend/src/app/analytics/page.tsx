@@ -27,9 +27,9 @@ export default function AnalyticsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center space-y-4 bg-black">
+      <div className="min-h-screen p-4 md:p-8 flex flex-col items-center justify-center space-y-4">
         <div className="loading-spinner w-12 h-12 border-4" />
-        <p className="text-gray-400">Calculating your metrics...</p>
+        <p className="text-gray-400 animate-pulse">Calculating your metrics...</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default function AnalyticsPage() {
     : '0';
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-8 animate-fade-in">
+    <div className="min-h-screen p-4 md:p-8 animate-fade-in">
       <main className="max-w-7xl mx-auto space-y-12">
         <header>
           <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">

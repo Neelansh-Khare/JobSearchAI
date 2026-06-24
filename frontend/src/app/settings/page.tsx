@@ -127,20 +127,20 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <header className="space-y-2">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+    <div className="min-h-screen p-4 md:p-8 animate-fade-in">
+      <main className="max-w-4xl mx-auto space-y-8">
+        <header>
+          <h1 className="text-4xl md:text-6xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             User Settings
           </h1>
-          <p className="text-gray-400 text-lg">Manage your account and preferences.</p>
+          <p className="text-gray-400 mt-2 text-lg">Manage your account and preferences.</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -157,7 +157,7 @@ export default function SettingsPage() {
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                    className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                     placeholder="Enter your full name"
                   />
                 </div>
@@ -168,7 +168,7 @@ export default function SettingsPage() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                    className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                     placeholder="Enter your email"
                   />
                 </div>
@@ -180,7 +180,7 @@ export default function SettingsPage() {
                       type="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                      className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                       placeholder="+1 (555) 000-0000"
                     />
                   </div>
@@ -190,7 +190,7 @@ export default function SettingsPage() {
                       type="url"
                       value={linkedin}
                       onChange={(e) => setLinkedin(e.target.value)}
-                      className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                      className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                       placeholder="https://linkedin.com/in/username"
                     />
                   </div>
@@ -205,7 +205,7 @@ export default function SettingsPage() {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                         placeholder="••••••••"
                       />
                     </div>
@@ -215,7 +215,7 @@ export default function SettingsPage() {
                         type="password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                        className="w-full p-3 glassmorphism bg-white/5 outline-none focus:border-indigo-500/50 text-white"
                         placeholder="••••••••"
                       />
                     </div>
@@ -297,7 +297,7 @@ export default function SettingsPage() {
             </GlassCard>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
