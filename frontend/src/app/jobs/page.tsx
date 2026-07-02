@@ -117,7 +117,7 @@ export default function JobsPage() {
               <Link href="/hunter">
                 <GlassButton>Find Jobs</GlassButton>
               </Link>
-              <Link href="/">
+              <Link href="/dashboard">
                 <GlassButton variant="primary">Customize Resume</GlassButton>
               </Link>
             </div>
@@ -188,7 +188,7 @@ export default function JobsPage() {
                 <Link href="/hunter">
                   <GlassButton>Find Jobs</GlassButton>
                 </Link>
-                <Link href="/">
+                <Link href="/dashboard">
                   <GlassButton variant="primary">Customize Resume</GlassButton>
                 </Link>
               </div>

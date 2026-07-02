@@ -75,7 +75,7 @@ export default function HunterPage() {
               <Link href="/jobs">
                 <GlassButton variant="secondary">My Jobs</GlassButton>
               </Link>
-              <Link href="/">
+              <Link href="/dashboard">
                 <GlassButton variant="primary">Customize Resume</GlassButton>
               </Link>
             </div>

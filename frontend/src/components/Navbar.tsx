@@ -6,14 +6,18 @@ import { useState, useEffect } from 'react';
 import { JobSearchAPI, getToken } from '@/services/api';
 import { useRouter } from 'next/navigation';
 
-const navItems = [
-  { name: 'Home', href: '/', icon: '🏠' },
+const loggedInNavItems = [
+  { name: 'Dashboard', href: '/dashboard', icon: '🏠' },
   { name: 'My Jobs', href: '/jobs', icon: '📋' },
   { name: 'Hunter', href: '/hunter', icon: '🔍' },
   { name: 'Outreach', href: '/outreach', icon: '📧' },
   { name: 'Referrals', href: '/referrals', icon: '🤝' },
   { name: 'Analytics', href: '/analytics', icon: '📊' },
   { name: 'Settings', href: '/settings', icon: '⚙️' },
+];
+
+const loggedOutNavItems = [
+  { name: 'Home', href: '/', icon: '🏠' },
 ];
 
 export default function Navbar() {
@@ -31,6 +35,8 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
+  const visibleNavItems = isLoggedIn ? loggedInNavItems : loggedOutNavItems;
+
   const handleLogout = () => {
     JobSearchAPI.logout();
     setIsLoggedIn(false);
@@ -43,14 +49,14 @@ export default function Navbar() {
       scrolled ? 'bg-black/40 backdrop-blur-lg border-b border-white/10 shadow-lg' : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href={isLoggedIn ? '/dashboard' : '/'} className="flex items-center space-x-2">
           <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
             JobSearchAI
           </span>
         </Link>
         
         <div className="hidden md:flex items-center space-x-1">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
@@ -86,7 +92,7 @@ export default function Navbar() {
         </div>
         
         <div className="flex md:hidden items-center space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-          {navItems.map((item) => {
+          {visibleNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link

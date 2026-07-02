@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       await JobSearchAPI.login(email, password);
       toast.success('Successfully logged in!', { id: loginToast });
-      router.push('/jobs'); 
+      router.push('/dashboard');
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || 'Login failed. Please check your credentials.', { id: loginToast });

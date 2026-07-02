@@ -156,7 +156,7 @@ export default function ReferralsPage() {
               <Link href="/jobs">
                 <GlassButton>My Jobs</GlassButton>
               </Link>
-              <Link href="/">
+              <Link href="/dashboard">
                 <GlassButton>Home</GlassButton>
               </Link>
             </div>

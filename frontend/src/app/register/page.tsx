@@ -32,7 +32,7 @@ export default function RegisterPage() {
       
       // After registration, log them in
       await JobSearchAPI.login(email, password);
-      router.push('/jobs');
+      router.push('/dashboard');
       router.refresh();
     } catch (err: any) {
       toast.error(err.message || 'Registration failed. Please try again.', { id: regToast });
