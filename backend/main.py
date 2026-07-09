@@ -27,10 +27,14 @@ logger = logging.getLogger(__name__)
 load_dotenv(".env")
 
 # Initialize FastAPI app
+# redirect_slashes=False: avoids 307 redirects whose Location header uses the
+# internal Docker hostname (e.g. http://backend:8000/...), which the browser
+# cannot resolve when requests are proxied through the Next.js /api rewrite.
 app = FastAPI(
     title="JobSearchAI API",
     description="Unified API for Job Search Automation, Resume Tailoring, and Outreach",
     version="1.0.0",
+    redirect_slashes=False,
 )
 
 # Add CORS middleware

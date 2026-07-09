@@ -234,7 +234,7 @@ Return ONLY the JSON array, no markdown."""
         return {"insights": fallback}
 
 
-@router.post("/", response_model=JobResponse, status_code=201)
+@router.post("", response_model=JobResponse, status_code=201)
 def create_job(
     job: JobCreate,
     current_user: User = Depends(deps.get_current_user),
@@ -262,7 +262,7 @@ def create_job(
     return db_job
 
 
-@router.get("/", response_model=List[JobResponse])
+@router.get("", response_model=List[JobResponse])
 def list_jobs(
     current_user: User = Depends(deps.get_current_user),
     status: Optional[JobStatus] = Query(None, description="Filter by status"),

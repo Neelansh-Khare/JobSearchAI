@@ -10,6 +10,14 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci
 
+# Dev image with hot reload (source is bind-mounted over this in docker-compose.override.yml)
+FROM base AS dev
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "-H", "0.0.0.0"]
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app

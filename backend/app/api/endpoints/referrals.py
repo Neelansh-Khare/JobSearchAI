@@ -15,7 +15,7 @@ from app.api.endpoints.search import search_jobs_jsearch
 router = APIRouter(prefix="/referrals", tags=["referrals"])
 logger = logging.getLogger(__name__)
 
-@router.post("/", response_model=ReferralSchema)
+@router.post("", response_model=ReferralSchema)
 async def create_referral(
     referral: ReferralCreate, 
     current_user: User = Depends(deps.get_current_user),
@@ -29,7 +29,7 @@ async def create_referral(
     db.refresh(db_referral)
     return db_referral
 
-@router.get("/", response_model=List[ReferralSchema])
+@router.get("", response_model=List[ReferralSchema])
 async def get_referrals(
     current_user: User = Depends(deps.get_current_user),
     company: Optional[str] = None,

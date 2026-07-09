@@ -116,7 +116,7 @@ async def upload_resume(
     return db_resume
 
 
-@router.get("/", response_model=list[ResumeResponse])
+@router.get("", response_model=list[ResumeResponse])
 def list_resumes(
     current_user: User = Depends(deps.get_current_user),
     db: Session = Depends(get_db)

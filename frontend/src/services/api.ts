@@ -1,23 +1,7 @@
 import { Application, CustomizeResumeResponse, Job, JobCreate, JobUpdate, Referral, ReferralCreate, ReferralUpdate, ActionableInsight } from '@/types';
 
-interface NextWindow {
-  __NEXT_DATA__?: {
-    env?: {
-      [key: string]: string;
-    };
-  };
-}
-
-// Next.js injects NEXT_PUBLIC_* env vars at build time
-// Access via globalThis to avoid TypeScript errors
-const getEnvVar = (key: string): string | undefined => {
-  if (typeof window !== 'undefined') {
-    return (window as unknown as NextWindow).__NEXT_DATA__?.env?.[key];
-  }
-  return undefined;
-};
-
-export const getApiBaseUrl = () => getEnvVar('NEXT_PUBLIC_API_BASE_URL') || 'http://127.0.0.1:8000';
+// Next.js inlines process.env.NEXT_PUBLIC_* references literally at build time.
+export const getApiBaseUrl = () => process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const API_BASE_URL = getApiBaseUrl();
 

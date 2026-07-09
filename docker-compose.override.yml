@@ -1,0 +1,24 @@
+# Auto-merged by `docker compose up` for local development.
+# Adds hot reload: bind-mounts source into both containers and runs
+# dev servers (uvicorn --reload, next dev) instead of the production build.
+#
+# Not used in production deploys that run with
+# `docker compose -f docker-compose.yml up` (override excluded).
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+      - ./backend/output:/app/output
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      target: dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=/api
+      - WATCHPACK_POLLING=true
