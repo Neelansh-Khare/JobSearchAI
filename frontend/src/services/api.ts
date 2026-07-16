@@ -395,8 +395,16 @@ export const JobSearchAPI = {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to search jobs');
+      let message = 'Failed to search jobs';
+      try {
+        const errorData = await response.json();
+        message = errorData.detail || message;
+      } catch {
+        message = response.status === 504
+          ? 'Job search timed out. The job search provider is responding slowly right now — please try again.'
+          : `${message} (server returned status ${response.status})`;
+      }
+      throw new Error(message);
     }
 
     return response.json();

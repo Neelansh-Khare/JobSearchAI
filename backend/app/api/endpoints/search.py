@@ -84,15 +84,25 @@ def search_jobs_jsearch(
         "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
     }
     
-    try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to search jobs: {str(e)}"
-        )
+    last_error = None
+    for attempt in range(2):
+        try:
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.Timeout as e:
+            last_error = e
+            continue
+        except requests.exceptions.RequestException as e:
+            raise HTTPException(
+                status_code=502,
+                detail=f"Failed to search jobs: {str(e)}"
+            )
+
+    raise HTTPException(
+        status_code=504,
+        detail="JSearch API timed out after retrying. Please try again shortly."
+    )
 
 
 @router.get("/jobs")
