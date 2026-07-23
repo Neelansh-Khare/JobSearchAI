@@ -240,7 +240,7 @@ export const JobSearchAPI = {
   },
 
   createJob: async (job: JobCreate): Promise<Job> => {
-    const response = await fetch(`${API_BASE_URL}/jobs/`, {
+    const response = await fetch(`${API_BASE_URL}/jobs`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(job),
@@ -268,7 +268,7 @@ export const JobSearchAPI = {
     if (status) params.append('status', status);
     if (company) params.append('company', company);
 
-    const response = await fetch(`${API_BASE_URL}/jobs/?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/jobs?${params.toString()}`, {
       headers: getHeaders(),
     });
 
@@ -475,7 +475,7 @@ export const JobSearchAPI = {
 
   // Referral methods
   createReferral: async (referral: ReferralCreate): Promise<Referral> => {
-    const response = await fetch(`${API_BASE_URL}/referrals/`, {
+    const response = await fetch(`${API_BASE_URL}/referrals`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(referral),
@@ -494,7 +494,7 @@ export const JobSearchAPI = {
     if (company) params.append('company', company);
     if (status) params.append('status', status);
 
-    const response = await fetch(`${API_BASE_URL}/referrals/?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/referrals?${params.toString()}`, {
       headers: getHeaders(),
     });
 
